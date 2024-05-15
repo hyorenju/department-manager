@@ -23,7 +23,7 @@ public class MasterData {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 200)
+    @Column(length = 200, unique = true)
     private String name;
 
     @Column(length = 200)
@@ -32,12 +32,18 @@ public class MasterData {
     @OneToMany(mappedBy = "type")
     private Collection<Intern> internTopicTypes;
 
-    @OneToMany(mappedBy = "status")
-    private Collection<Intern> internTopicStatuses;
-
-    @OneToMany(mappedBy = "status")
-    private Collection<Teaching> teachingPointFileStatuses;
-
     @OneToMany(mappedBy = "form")
     private Collection<Exam> examForms;
+
+    @OneToMany(mappedBy = "schoolYear")
+    private Collection<Exam> examSchoolYears;
+
+    @OneToMany(mappedBy = "schoolYear")
+    private Collection<Intern> internSchoolYears;
+
+    @OneToMany(mappedBy = "schoolYear")
+    private Collection<Teaching> teachingSchoolYears;
+
+    @OneToMany(mappedBy = "degree")
+    private Collection<User> userDegrees;
 }

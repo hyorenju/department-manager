@@ -13,18 +13,21 @@ import org.springframework.util.StringUtils;
 import vn.edu.vnua.department.common.Constants;
 import vn.edu.vnua.department.department.entity.Department;
 import vn.edu.vnua.department.department.repository.DepartmentRepository;
-import vn.edu.vnua.department.faculty.entity.Faculty;
-import vn.edu.vnua.department.faculty.repository.FacultyRepository;
+import vn.edu.vnua.department.masterdata.entity.MasterData;
+import vn.edu.vnua.department.masterdata.repository.MasterDataRepository;
 import vn.edu.vnua.department.role.entity.Role;
 import vn.edu.vnua.department.role.repository.RoleRepository;
+import vn.edu.vnua.department.service.excel.ExcelService;
 import vn.edu.vnua.department.user.entity.User;
 import vn.edu.vnua.department.user.repository.CustomUserRepository;
 import vn.edu.vnua.department.user.repository.UserRepository;
 import vn.edu.vnua.department.user.request.*;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.function.Predicate;
 
 @Service
 @RequiredArgsConstructor
@@ -32,13 +35,33 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final DepartmentRepository departmentRepository;
-    private final FacultyRepository facultyRepository;
     private final PasswordEncoder encoder;
+    private final MasterDataRepository masterDataRepository;
+    private final ExcelService excelService;
 
     @Override
     public Page<User> getUserList(GetUserListRequest request) {
         Specification<User> specification = CustomUserRepository.filterUserList(request);
         return userRepository.findAll(specification, PageRequest.of(request.getPage() - 1, request.getSize()));
+    }
+
+    @Override
+    public List<User> getUserSelection(GetUserSelectionRequest request) {
+        User dev = userRepository.findById(Constants.DevAccountConstant.DEV).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+        List<User> users;
+        if (StringUtils.hasText(request.getDepartmentId())) {
+            users = userRepository.findAllByDepartmentId(request.getDepartmentId());
+            users.remove(dev);
+            return users;
+        } else if (StringUtils.hasText(request.getFacultyId())) {
+            users = userRepository.findAllByDepartmentFacultyId(request.getFacultyId());
+            users.remove(dev);
+            return users;
+        } else {
+            users = userRepository.findAll();
+            users.remove(dev);
+            return users;
+        }
     }
 
     @Override
@@ -50,28 +73,41 @@ public class UserServiceImpl implements UserService {
             if (userRepository.existsById(request.getId())) {
                 throw new RuntimeException(Constants.UserConstant.USER_ALREADY_EXIST);
             }
-            Role role = roleRepository.findById(Constants.RoleIdConstant.LECTURER).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
+            String roleId = request.getRole().getId();
+            Role role = roleRepository.findById(roleId).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
             Department department = departmentRepository.findById(request.getDepartment().getId()).orElseThrow(() -> new RuntimeException(Constants.DepartmentConstant.DEPARTMENT_NOT_FOUND));
 
             if (user.getRole().getId().equals(Constants.RoleIdConstant.MANAGER) ||
-                    user.getRole().getId().equals(Constants.RoleIdConstant.DEPUTY)){
-                department = user.getDepartment();
-            } else /*if (user.getRole().getId().equals(Constants.RoleIdConstant.DEAN))*/ {
-                if (!user.getDepartment().getFaculty().equals(department.getFaculty())) {
-                    throw new RuntimeException(Constants.FacultyConstant.CANNOT_CREATE_USER);
+                    user.getRole().getId().equals(Constants.RoleIdConstant.DEPUTY)) {
+                if (user.getDepartment() != department) {
+                    throw new RuntimeException(Constants.UserConstant.CANNOT_MANAGE_ANOTHER_DEPARTMENT);
+                }
+            } else if (user.getRole().getId().equals(Constants.RoleIdConstant.DEAN)) {
+                if (user.getDepartment().getFaculty() != department.getFaculty()) {
+                    throw new RuntimeException(Constants.UserConstant.CANNOT_MANAGE_ANOTHER_FACULTY);
                 }
             }
 
+            switch (roleId) {
+                case Constants.RoleIdConstant.DEPUTY, Constants.RoleIdConstant.MANAGER -> user.setManage(user.getDepartment().getId());
+                case Constants.RoleIdConstant.DEAN -> user.setManage(user.getDepartment().getFaculty().getId());
+                case Constants.RoleIdConstant.PRINCIPAL -> user.setManage(Constants.SchoolNameAbbreviationConstant.SCHOOL_NAME);
+                default -> user.setManage(null);
+            }
+
+            MasterData degree = masterDataRepository.findById(request.getDegree().getId()).orElseThrow(() -> new RuntimeException(Constants.MasterDataConstant.DEGREE_NOT_FOUND));
+
             return userRepository.saveAndFlush(
                     User.builder()
-                            .id(request.getId().toUpperCase())
+                            .id(request.getId())
                             .firstName(request.getFirstName())
                             .lastName(request.getLastName())
-                            .degree(request.getDegree())
+                            .degree(degree)
                             .email(request.getEmail())
                             .phoneNumber(request.getPhoneNumber())
                             .department(department)
                             .password(StringUtils.hasText(request.getPassword()) ? encoder.encode(request.getPassword()) : encoder.encode("123"))
+                            .createdAt(Timestamp.valueOf(LocalDateTime.now()))
                             .role(role)
                             .note(request.getNote())
                             .build()
@@ -82,67 +118,54 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User createDean(String id, CreateDeanRequest request) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
-
-        Role lecturer = roleRepository.findById(Constants.RoleIdConstant.LECTURER).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
-        if (!user.getRole().equals(lecturer)) {
-            throw new RuntimeException(Constants.UserConstant.USER_ARE_NOT_LECTURER);
-        }
-
-        Role role = roleRepository.findById(Constants.RoleIdConstant.DEAN).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
-        String manage = request.getManage();
-        if (!StringUtils.hasText(manage)) {
-            throw new RuntimeException(Constants.UserConstant.MANAGE_NOT_BLANK);
-        } else {
-            Optional<Faculty> facultyOptional = facultyRepository.findById(manage);
-            if (facultyOptional.isEmpty()) {
-                throw new RuntimeException(Constants.UserConstant.MANAGE_NOT_FOUND);
-            }
-        }
-        if (userRepository.existsByRoleAndManage(role, manage)) {
-            throw new RuntimeException(Constants.UserConstant.DEAN_ALREADY_EXIST);
-        }
-
-        user.setRole(role);
-        user.setManage(manage);
-        user.setNote(request.getNote());
-
-        return userRepository.saveAndFlush(user);
-    }
-
-    @Override
-    public User createManager(String id, CreateManagerRequest request) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
-        Role role = roleRepository.findById(Constants.RoleIdConstant.MANAGER).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
-
-        Role lecturer = roleRepository.findById(Constants.RoleIdConstant.LECTURER).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
-        if (!user.getRole().equals(lecturer)) {
-            throw new RuntimeException(Constants.UserConstant.USER_ARE_NOT_LECTURER);
-        }
-
-        String manage = user.getDepartment().getId();
-        if (userRepository.existsByRoleAndManage(role, manage)) {
-            throw new RuntimeException(Constants.UserConstant.MANAGER_ALREADY_EXIST);
-        }
-
-        user.setRole(role);
-        user.setManage(manage);
-        user.setNote(request.getNote());
-
-        return userRepository.saveAndFlush(user);
-    }
-
-    @Override
     public User updateUser(String id, UpdateUserRequest request) {
         try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            User manager = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+            String managerRoleId = manager.getRole().getId();
+
+            if (manager.getId().equals(id)) {
+                throw new RuntimeException(Constants.UserConstant.CANNOT_MANAGE_YOURSELF);
+            }
+
             User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+            String userRoleId = user.getRole().getId();
+
+            if (managerRoleId.equals(Constants.RoleIdConstant.DEAN) &&
+                    userRoleId.equals(Constants.RoleIdConstant.PRINCIPAL)) {
+                throw new RuntimeException(Constants.UserConstant.CANNOT_MANAGE_SUPERIOR);
+            } else if (managerRoleId.equals(Constants.RoleIdConstant.MANAGER) &&
+                    (userRoleId.equals(Constants.RoleIdConstant.DEAN) ||
+                            userRoleId.equals(Constants.RoleIdConstant.PRINCIPAL))) {
+                throw new RuntimeException(Constants.UserConstant.CANNOT_MANAGE_SUPERIOR);
+            } else if (managerRoleId.equals(Constants.RoleIdConstant.DEPUTY) &&
+                    (userRoleId.equals(Constants.RoleIdConstant.MANAGER) ||
+                            userRoleId.equals(Constants.RoleIdConstant.DEAN) ||
+                            userRoleId.equals(Constants.RoleIdConstant.PRINCIPAL))) {
+                throw new RuntimeException(Constants.UserConstant.CANNOT_MANAGE_SUPERIOR);
+            }
+
             String roleId = request.getRole().getId();
             Role role = roleRepository.findById(roleId).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
+            MasterData degree = masterDataRepository.findById(request.getDegree().getId()).orElseThrow(() -> new RuntimeException(Constants.MasterDataConstant.DEGREE_NOT_FOUND));
+
+            if (user.getRole().getId().equals(Constants.RoleIdConstant.MANAGER) ||
+                    user.getRole().getId().equals(Constants.RoleIdConstant.DEPUTY)) {
+                if (manager.getDepartment() != user.getDepartment() &&
+                !manager.getRole().getId().equals(Constants.RoleIdConstant.PRINCIPAL) &&
+                        !manager.getRole().getId().equals(Constants.RoleIdConstant.DEAN)) {
+                    throw new RuntimeException(Constants.UserConstant.CANNOT_MANAGE_ANOTHER_DEPARTMENT);
+                }
+            } else if (user.getRole().getId().equals(Constants.RoleIdConstant.DEAN)) {
+                if (manager.getDepartment().getFaculty() != user.getDepartment().getFaculty() &&
+                        !manager.getRole().getId().equals(Constants.RoleIdConstant.PRINCIPAL)) {
+                    throw new RuntimeException(Constants.UserConstant.CANNOT_MANAGE_ANOTHER_FACULTY);
+                }
+            }
 
             user.setFirstName(request.getFirstName());
             user.setLastName(request.getLastName());
-            user.setDegree(request.getDegree());
+            user.setDegree(degree);
             user.setEmail(request.getEmail());
             user.setPhoneNumber(request.getPhoneNumber());
             user.setPassword(StringUtils.hasText(request.getPassword()) ? encoder.encode(request.getPassword()) : user.getPassword());
@@ -150,9 +173,10 @@ public class UserServiceImpl implements UserService {
             user.setNote(request.getNote());
 
             switch (roleId) {
-                case Constants.RoleIdConstant.LECTURER -> user.setManage(null);
-                case Constants.RoleIdConstant.DEPUTY -> user.setManage(user.getDepartment().getId());
-                default -> throw new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND);
+                case Constants.RoleIdConstant.DEPUTY, Constants.RoleIdConstant.MANAGER -> user.setManage(user.getDepartment().getId());
+                case Constants.RoleIdConstant.DEAN -> user.setManage(user.getDepartment().getFaculty().getId());
+                case Constants.RoleIdConstant.PRINCIPAL -> user.setManage(Constants.SchoolNameAbbreviationConstant.SCHOOL_NAME);
+                default -> user.setManage(null);
             }
 
             return userRepository.saveAndFlush(user);
@@ -189,8 +213,22 @@ public class UserServiceImpl implements UserService {
     @Override
     public User deleteUser(String id) {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
-        userRepository.delete(user);
+        if (!user.getRole().getId().equals(Constants.RoleIdConstant.LECTURER)) {
+            throw new RuntimeException(Constants.UserConstant.CANNOT_DELETE_HIGH_ROLE);
+        }
+        try {
+            userRepository.delete(user);
+        } catch (Exception e) {
+            throw new RuntimeException(Constants.UserConstant.CANNOT_DELETE_USER);
+        }
         return user;
+    }
+
+    @Override
+    public String exportToExcel(ExportUserListRequest request) {
+        Specification<User> specification = CustomUserRepository.filterExportUser(request);
+        List<User> users = userRepository.findAll(specification);
+        return excelService.writeUserToExcel(users);
     }
 
     @Override
@@ -198,7 +236,37 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
         Role role = roleRepository.findById(Constants.RoleIdConstant.PRINCIPAL).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
         user.setRole(role);
-        user.setManage(Constants.UserConstant.SET_PRINCIPAL_MANAGE);
+        user.setManage(Constants.SchoolNameAbbreviationConstant.SCHOOL_NAME);
         return userRepository.saveAndFlush(user);
+    }
+
+    @Override
+    public User devCreateUser(CreateUserRequest request) {
+        try {
+            if (userRepository.existsById(request.getId())) {
+                throw new RuntimeException(Constants.UserConstant.USER_ALREADY_EXIST);
+            }
+            Role role = roleRepository.findById(Constants.RoleIdConstant.LECTURER).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
+            Department department = departmentRepository.findById(request.getDepartment().getId()).orElseThrow(() -> new RuntimeException(Constants.DepartmentConstant.DEPARTMENT_NOT_FOUND));
+            MasterData degree = masterDataRepository.findById(request.getDegree().getId()).orElseThrow(() -> new RuntimeException(Constants.MasterDataConstant.DEGREE_NOT_FOUND));
+
+            return userRepository.saveAndFlush(
+                    User.builder()
+                            .id(request.getId())
+                            .firstName(request.getFirstName())
+                            .lastName(request.getLastName())
+                            .degree(degree)
+                            .email(request.getEmail())
+                            .phoneNumber(request.getPhoneNumber())
+                            .department(department)
+                            .password(StringUtils.hasText(request.getPassword()) ? encoder.encode(request.getPassword()) : encoder.encode("123"))
+                            .createdAt(Timestamp.valueOf(LocalDateTime.now()))
+                            .role(role)
+                            .note(request.getNote())
+                            .build()
+            );
+        } catch (DataIntegrityViolationException e) {
+            throw new RuntimeException(Constants.UserConstant.EMAIL_ALREADY_USE);
+        }
     }
 }

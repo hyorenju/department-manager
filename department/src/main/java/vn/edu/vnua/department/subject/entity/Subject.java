@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import vn.edu.vnua.department.department.entity.Department;
 import vn.edu.vnua.department.exam.entity.Exam;
 import vn.edu.vnua.department.student.entity.Student;
 import vn.edu.vnua.department.teaching.entity.Teaching;
@@ -21,23 +22,24 @@ import java.util.Collection;
 @Table(name = "subjects")
 public class Subject {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(length = 100)
+    private String id;
 
     @Column(length = 200)
     private String name;
 
+    @ManyToOne
+    @JoinColumn(name = "department_id")
+    private Department department;
+
     @Column
-    private Byte credits;
+    private Integer credits;
 
     @Column(length = 1000)
     private String outline;
 
     @Column(length = 1000)
     private String lecture;
-
-    @Column(length = 1000)
-    private String curriculum;
 
     @Column(name = "created_at")
     private Timestamp createdAt;

@@ -5,11 +5,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import vn.edu.vnua.department.domain.validation.ImportTeachingValidator;
 import vn.edu.vnua.department.masterdata.entity.MasterData;
 import vn.edu.vnua.department.subject.entity.Subject;
+import vn.edu.vnua.department.teaching.model.TeachingExcelData;
 import vn.edu.vnua.department.user.entity.User;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -27,17 +30,18 @@ public class Teaching {
     private Subject subject;
 
     @ManyToOne
-    @JoinColumn(name = "hr_teacher")
-    private User hrTeacher;
+    @JoinColumn(name = "teacher")
+    private User teacher;
 
     @Column(name = "class_id", length = 100)
     private String classId;
 
     @Column(name = "teaching_group", length = 200)
-    private String teachingGroup;
+    private Integer teachingGroup;
 
-    @Column(name = "school_year", length = 200)
-    private String schoolYear;
+    @ManyToOne
+    @JoinColumn(name = "school_year")
+    private MasterData schoolYear;
 
     @Column
     private Byte term;
@@ -48,9 +52,8 @@ public class Teaching {
     @Column(name = "summary_file", length = 1000)
     private String summaryFile;
 
-    @ManyToOne
-    @JoinColumn(name = "status")
-    private MasterData status;
+    @Column(name = "status", length = 200)
+    private String status;
 
     @Column(name = "created_at")
     private Timestamp createdAt;
@@ -68,4 +71,14 @@ public class Teaching {
 
     @Column
     private String note;
+
+    public List<TeachingExcelData.ErrorDetail> validateInformationDetailError(List<TeachingExcelData.ErrorDetail> errorDetailList){
+        if (!ImportTeachingValidator.validateNaturalNum(term)) {
+            errorDetailList.add(TeachingExcelData.ErrorDetail.builder().columnIndex(1).errorMsg("Học kỳ không hợp lệ").build());
+        }
+        if (!ImportTeachingValidator.validateNaturalNum(teachingGroup)) {
+            errorDetailList.add(TeachingExcelData.ErrorDetail.builder().columnIndex(4).errorMsg("NMH không hợp lệ").build());
+        }
+        return errorDetailList;
+    }
 }

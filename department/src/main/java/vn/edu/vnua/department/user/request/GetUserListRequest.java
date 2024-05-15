@@ -5,8 +5,11 @@ import vn.edu.vnua.department.request.GetPageBaseRequest;
 
 @Data
 public class GetUserListRequest extends GetPageBaseRequest {
-    private String keyword;
-    private String degree;
+    private String id;
+    private String firstName;
+    private String lastName;
+    private String degreeId;
     private String facultyId;
     private String departmentId;
+    private String roleId;
 }

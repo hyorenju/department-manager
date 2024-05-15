@@ -9,9 +9,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-/**
- * CREATE BY MinhDV
- */
 public class CriteriaBuilderUtil {
     public static <T> Predicate createPredicateForArrayColumn(Root<T> root,
                                                               CriteriaBuilder criteriaBuilder,

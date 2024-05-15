@@ -17,15 +17,18 @@ public class CustomDepartmentRepository {
     public static Specification<Department> filterDepartmentList(GetDepartmentListRequest request) {
         return ((root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
-            if (!Strings.isEmpty(request.getKeyword())) {
+            if (StringUtils.hasText(request.getKeyword())) {
                 predicates.add(
                         CriteriaBuilderUtil.createPredicateForSearchInsensitive(root, criteriaBuilder, request.getKeyword(),
                                 "id", "name")
                 );
             }
-            if (!StringUtils.hasText(request.getFacultyId())){
+            if (StringUtils.hasText(request.getFacultyId())){
                 predicates.add(criteriaBuilder.like(root.get("faculty").get("id"), request.getFacultyId()));
             }
+            query.orderBy(
+                    criteriaBuilder.desc(root.get("createdAt"))
+            );
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         });
     }

@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Calendar;
+import java.util.Date;
 
 public class MyUtils {
     public static Timestamp convertTimestampFromString(String inputDate) throws ParseException {
@@ -68,7 +69,16 @@ public class MyUtils {
         }
     }
 
-    public Timestamp test(long inputDate) throws ParseException {
-        return new Timestamp(inputDate);
+    public static Byte parseByteFromString(String input) {
+        try {
+            return Byte.parseByte(input);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    public boolean test() throws ParseException {
+        Timestamp time1 = Timestamp.valueOf("2024-04-12 00:00:00");
+        return time1.equals(convertTimestampFromString("12/04/2024"));
     }
 }

@@ -12,10 +12,12 @@ import vn.edu.vnua.department.department.entity.Department;
 import vn.edu.vnua.department.exam.entity.Exam;
 import vn.edu.vnua.department.faculty.entity.Faculty;
 import vn.edu.vnua.department.intern.entity.Intern;
+import vn.edu.vnua.department.masterdata.entity.MasterData;
 import vn.edu.vnua.department.role.entity.Role;
 import vn.edu.vnua.department.subject.entity.Subject;
 import vn.edu.vnua.department.teaching.entity.Teaching;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -37,8 +39,9 @@ public class User {
     @Column(name = "last_name", length = 200)
     private String lastName;
 
-    @Column(length = 200)
-    private String degree;
+    @ManyToOne
+    @JoinColumn(name = "degree_id")
+    private MasterData degree;
 
     @Column(length = 200, unique = true)
     private String email;
@@ -55,6 +58,9 @@ public class User {
 
     @Column(length = 200)
     private String password;
+
+    @Column(name = "create_at")
+    private Timestamp createdAt;
 
     @ManyToOne
     @JoinColumn(name = "role_id")
@@ -76,14 +82,8 @@ public class User {
     @OneToMany(mappedBy = "instructor")
     private Collection<Intern> interns;
 
-    @OneToMany(mappedBy = "hrTeacher")
+    @OneToMany(mappedBy = "teacher")
     private Collection<Teaching> teachingAssignments;
-
-    @OneToMany(mappedBy = "createdBy")
-    private Collection<Teaching> createdTeachingAssignments;
-
-    @OneToMany(mappedBy = "modifiedBy")
-    private Collection<Teaching> modifiedTeachingAssignments;
 
     @OneToMany(mappedBy = "lecturerTeach")
     private Collection<Exam> examsHRTeacher;
@@ -102,6 +102,27 @@ public class User {
 
     @OneToMany(mappedBy = "picker")
     private Collection<Exam> examsPicker;
+
+    @OneToMany(mappedBy = "printer")
+    private Collection<Exam> examsPrinter;
+
+    @OneToMany(mappedBy = "questionTaker")
+    private Collection<Exam> questionTakers;
+
+    @OneToMany(mappedBy = "examTaker")
+    private Collection<Exam> examTakers;
+
+    @OneToMany(mappedBy = "examGiver")
+    private Collection<Exam> examGivers;
+
+    @OneToMany(mappedBy = "pointGiver")
+    private Collection<Exam> pointGivers;
+
+    @OneToMany(mappedBy = "createdBy")
+    private Collection<Teaching> createdTeachingAssignments;
+
+    @OneToMany(mappedBy = "modifiedBy")
+    private Collection<Teaching> modifiedTeachingAssignments;
 
     @OneToMany(mappedBy = "createdBy")
     private Collection<Exam> createdExamAssignments;

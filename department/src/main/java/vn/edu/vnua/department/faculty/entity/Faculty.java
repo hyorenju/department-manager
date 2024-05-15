@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import vn.edu.vnua.department.aclass.entity.AClass;
 import vn.edu.vnua.department.department.entity.Department;
 import vn.edu.vnua.department.subject.entity.Subject;
 import vn.edu.vnua.department.user.entity.User;
@@ -42,4 +43,7 @@ public class Faculty {
 
     @OneToMany(mappedBy = "faculty", cascade = CascadeType.ALL)
     private Collection<Department> departments;
+
+    @OneToMany(mappedBy = "faculty", cascade = CascadeType.ALL)
+    private Collection<AClass> classes;
 }

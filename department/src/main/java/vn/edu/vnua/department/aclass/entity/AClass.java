@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import vn.edu.vnua.department.faculty.entity.Faculty;
 import vn.edu.vnua.department.user.entity.User;
 
 import java.sql.Timestamp;
@@ -23,11 +24,12 @@ public class AClass {
     @Column(length = 200)
     private String name;
 
-    @Column(length = 200)
-    private String faculty;
+    @ManyToOne
+    @JoinColumn(name = "faculty_id")
+    private Faculty faculty;
 
-    @Column(name = "teacher", length = 200)
-    private String teacher;
+    @Column(name = "homeroom_teacher", length = 200)
+    private String hrTeacher;
 
     @Column(name = "monitor", length = 200)
     private String monitor;

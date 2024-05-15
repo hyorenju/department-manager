@@ -23,15 +23,16 @@ public class Intern {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 200)
+    @Column(length = 200, unique = true)
     private String name;
 
     @ManyToOne
     @JoinColumn(name = "type")
     private MasterData type;
 
-    @Column(name = "school_year", length = 200)
-    private String schoolYear;
+    @ManyToOne
+    @JoinColumn(name = "school_year")
+    private MasterData schoolYear;
 
     @Column
     private Byte term;
@@ -49,13 +50,12 @@ public class Intern {
     @Column(name = "final_file", length = 1000)
     private String finalFile;
 
-    @ManyToOne
-    @JoinColumn(name = "status")
-    private MasterData status;
+    @Column(name = "status", length = 200)
+    private String status;
 
     @Column
     private String note;
 
-    @OneToMany(mappedBy = "internTopic")
+    @OneToMany(mappedBy = "intern")
     private Collection<Student> students;
 }

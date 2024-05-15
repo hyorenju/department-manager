@@ -11,6 +11,7 @@ import vn.edu.vnua.department.department.entity.Department;
 import vn.edu.vnua.department.department.entity.DepartmentDTO;
 import vn.edu.vnua.department.department.request.CreateDepartmentRequest;
 import vn.edu.vnua.department.department.request.GetDepartmentListRequest;
+import vn.edu.vnua.department.department.request.GetDepartmentSelectionRequest;
 import vn.edu.vnua.department.department.request.UpdateDepartmentRequest;
 import vn.edu.vnua.department.department.service.DepartmentService;
 import vn.edu.vnua.department.faculty.entity.Faculty;
@@ -33,6 +34,14 @@ public class DepartmentController extends BaseController {
                 department -> modelMapper.map(department, DepartmentDTO.class)
         ).toList();
         return buildPageItemResponse(request.getPage(), response.size(), page.getTotalElements(), response);
+    }
+
+    @PostMapping("selection")
+    public ResponseEntity<?> getDepartmentSelection(@RequestBody @Valid GetDepartmentSelectionRequest request) {
+        List<DepartmentDTO> response = departmentService.getDepartmentSelection(request).stream().map(
+                department -> modelMapper.map(department, DepartmentDTO.class)
+        ).toList();
+        return buildListItemResponse(response, response.size());
     }
 
     @PostMapping("create")

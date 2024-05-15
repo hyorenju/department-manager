@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface FacultyService {
     Page<Faculty> getFacultyList(GetFacultyListRequest request);
+    List<Faculty> getFacultySelection();
     Faculty createFaculty(CreateFacultyRequest request);
     Faculty updateFaculty(String id, UpdateFacultyRequest request);
     Faculty deleteFaculty(String id);

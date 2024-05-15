@@ -33,6 +33,14 @@ public class FacultyController extends BaseController {
         return buildPageItemResponse(request.getPage(), response.size(), page.getTotalElements(), response);
     }
 
+    @PostMapping("selection")
+    public ResponseEntity<?> getFacultySelection() {
+        List<FacultyDTO> response = facultyService.getFacultySelection().stream().map(
+                faculty -> modelMapper.map(faculty, FacultyDTO.class)
+        ).toList();
+        return buildListItemResponse(response, response.size());
+    }
+
     @PostMapping("create")
 //    @PreAuthorize("hasAnyAuthority()")
     public ResponseEntity<?> createFaculty(@Valid @RequestBody CreateFacultyRequest request) {

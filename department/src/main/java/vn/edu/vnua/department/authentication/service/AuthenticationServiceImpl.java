@@ -26,7 +26,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtUtils;
     private final PasswordEncoder encoder;
-    private final ModelMapper modelMapper;
 
     @Override
     public UserLoginResponse authenticateUser(String id, String password) {

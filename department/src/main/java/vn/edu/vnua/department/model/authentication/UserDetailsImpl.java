@@ -8,7 +8,9 @@ import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import vn.edu.vnua.department.department.entity.Department;
+import vn.edu.vnua.department.department.entity.DepartmentBasicDTO;
 import vn.edu.vnua.department.department.entity.DepartmentDTO;
+import vn.edu.vnua.department.masterdata.entity.MasterDataDTO;
 import vn.edu.vnua.department.role.entity.RoleDTO;
 
 import java.util.Collection;
@@ -26,13 +28,13 @@ public class UserDetailsImpl implements UserDetails {
 
     private String lastName;
 
-    private String degree;
+    private MasterDataDTO degree;
 
     private String email;
 
     private String phoneNumber;
 
-    private DepartmentDTO department;
+    private DepartmentBasicDTO department;
 
     private String roleId;
 

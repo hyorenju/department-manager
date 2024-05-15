@@ -1,4 +1,4 @@
-package vn.edu.vnua.department.user.service;
+package vn.edu.vnua.department.service;
 
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -7,7 +7,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import vn.edu.vnua.department.common.Constants;
+import vn.edu.vnua.department.department.entity.DepartmentBasicDTO;
 import vn.edu.vnua.department.department.entity.DepartmentDTO;
+import vn.edu.vnua.department.masterdata.entity.MasterDataDTO;
 import vn.edu.vnua.department.model.authentication.UserDetailsImpl;
 import vn.edu.vnua.department.user.entity.User;
 import vn.edu.vnua.department.user.repository.UserRepository;
@@ -25,10 +27,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .id(user.getId())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
-                .degree(user.getDegree())
+                .degree(modelMapper.map(user.getDegree(), MasterDataDTO.class))
                 .email(user.getEmail())
                 .phoneNumber(user.getPhoneNumber())
-                .department(modelMapper.map(user.getDepartment(), DepartmentDTO.class))
+                .department(modelMapper.map(user.getDepartment(), DepartmentBasicDTO.class))
                 .roleId(user.getRole().getId())
                 .manage(user.getManage())
                 .note(user.getNote())

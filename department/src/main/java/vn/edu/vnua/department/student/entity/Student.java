@@ -32,7 +32,7 @@ public class Student {
 
     @ManyToOne
     @JoinColumn(name = "intern_id")
-    private Intern internTopic;
+    private Intern intern;
 
     @Column
     private String note;

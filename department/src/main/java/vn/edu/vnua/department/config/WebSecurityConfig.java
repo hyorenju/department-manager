@@ -61,6 +61,9 @@ public class WebSecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeRequests(expressionInterceptUrlRegistry -> expressionInterceptUrlRegistry
                         .requestMatchers("/login").permitAll()
+                        .requestMatchers("/test/**").permitAll()
+                        .requestMatchers("/user/**").permitAll()
+                        .requestMatchers("/master-data/**").permitAll()
 //                        .requestMatchers("/").authenticated()
                         .anyRequest().authenticated());
 
