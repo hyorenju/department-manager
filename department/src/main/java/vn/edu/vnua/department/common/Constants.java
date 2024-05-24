@@ -14,6 +14,7 @@ public interface Constants {
     }
 
     interface DateTimeConstants {
+        String YEAR_MONTH_DAY_FORMAT = "yyyy-MM-dd";
         String DATE_FORMAT = "dd/MM/yyyy";
         String MONTH_YEAR_FORMAT = "MM/yyyy";
         String DATE_TIME_FORMAT = "dd/MM/yyyy HH:mm:ss";
@@ -43,7 +44,7 @@ public interface Constants {
     interface UserConstant {
         String USER_ALREADY_EXIST = "Người dùng đã tồn tại";
         String USER_NOT_FOUND = "Người dùng không tồn tại";
-        String USER_ARE_NOT_LECTURER = "Người dùng này hiện đã là quản trị viên";
+        String USER_ARE_NOT_LECTURER = "Người dùng này hiện có vai trò cao hơn giảng viên, không thể chuyển";
         String EMAIL_ALREADY_USE = "Email đã được người dùng khác sử dụng";
         String CANNOT_DELETE_HIGH_ROLE = "Người dùng này đang có vai trò quản trị, không thể xóa";
         String CANNOT_DELETE_USER = "Thông tin người dùng đã bị ràng buộc với các hành động quản lý dữ liệu hệ thống, không thể xóa";
@@ -106,6 +107,7 @@ public interface Constants {
     interface TeachingConstant{
         String TEACHING_NOT_FOUND = "Không tìm thấy phân công giảng dạy";
         String TEACHING_IS_EXISTED = "Phân công này đã tồn tại, vui lòng kiểm tra lại";
+        String CANNOT_UPDATE = "Bạn không thể sửa phân công giảng dạy của giảng viên khác";
     }
 
     interface ExamConstant{
@@ -125,5 +127,13 @@ public interface Constants {
     interface ExcelConstant{
         String DATA_NOT_FOUND = "Không tìm thấy dữ liệu. Hãy chắc chắn rằng file excel được nhập từ ô A1";
         String NO_DATA = "Tệp excel không có dữ liệu";
+    }
+
+    interface PasswordConstant{
+        String PASSWORD_REGEX = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$";
+        String WRONG_OLD_PASSWORD = "Mật khẩu cũ không chính xác";
+        String WRONG_PASSWORD_REGEX = "Mật khẩu phải có 8 ký tự trở lên, có cả ký tự chữ và số";
+        String NOT_BE_SAME_OLD_PASSWORD = "Mật khẩu mới không được trùng mật khẩu cũ";
+        String BE_SAME_NEW_PASSWORD = "Xác nhận mật khẩu không trùng khớp";
     }
 }

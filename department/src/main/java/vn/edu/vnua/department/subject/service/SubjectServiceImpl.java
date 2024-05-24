@@ -49,7 +49,7 @@ public class SubjectServiceImpl implements SubjectService {
     @Override
     public Subject createSubject(CreateSubjectRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User createdBy = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+        User createdBy = userRepository.getUserById(authentication.getPrincipal().toString());
 
         Department department = createdBy.getDepartment();
 
@@ -71,7 +71,7 @@ public class SubjectServiceImpl implements SubjectService {
         Subject subject = subjectRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.SubjectConstant.SUBJECT_NOT_FOUND));
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User modifiedBy = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+        User modifiedBy = userRepository.getUserById(authentication.getPrincipal().toString());
 
         subject.setName(request.getName());
         subject.setCredits(request.getCredits());

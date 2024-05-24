@@ -18,7 +18,7 @@ public class CustomUserRepository {
         return ((root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (StringUtils.hasText(request.getId())){
-                predicates.add(criteriaBuilder.like(root.get("id"), request.getId() + "%"));
+                predicates.add(criteriaBuilder.like(root.get("id"), "%" + request.getId() + "%"));
             }
 
             if (StringUtils.hasText(request.getFirstName())){

@@ -61,17 +61,20 @@ public class StoreTeachingWorker implements Callable<TeachingExcelData> {
                     .build();
 
             List<TeachingExcelData.ErrorDetail> errorDetailList = teaching.validateInformationDetailError(new CopyOnWriteArrayList<>());
-            if (schoolYear==null) {
-                errorDetailList.add(TeachingExcelData.ErrorDetail.builder().columnIndex(0).errorMsg("Học kỳ không hợp lệ").build());
+            if (schoolYear == null) {
+                errorDetailList.add(TeachingExcelData.ErrorDetail.builder().columnIndex(0).errorMsg("Năm học không hợp lệ").build());
             }
-            if (teacher==null) {
+            if (teacher == null) {
                 errorDetailList.add(TeachingExcelData.ErrorDetail.builder().columnIndex(2).errorMsg("Giảng viên không tồn tại").build());
             }
-            if (subject==null) {
+            if (subject == null) {
                 errorDetailList.add(TeachingExcelData.ErrorDetail.builder().columnIndex(3).errorMsg("Môn học không tồn tại").build());
             }
-            if (teachingRepository.existsBySchoolYearIdAndTermAndSubjectIdAndClassIdAndTeachingGroup(
-                    teaching.getSchoolYear().getId(), teaching.getTerm(), teaching.getSubject().getId(), teaching.getClassId(), teaching.getTeachingGroup()
+            if (createdBy.getRole().getId().equals(Constants.RoleIdConstant.LECTURER) &&
+                    createdBy != teacher) {
+                errorDetailList.add(TeachingExcelData.ErrorDetail.builder().columnIndex(6).errorMsg("Bạn không thể thêm phân công của giảng viên khác").build());
+            } else if (teachingRepository.existsBySchoolYearIdAndTermAndSubjectIdAndClassIdAndTeachingGroup(
+                    schoolYear != null ? teaching.getSchoolYear().getId() : null, teaching.getTerm(), subject != null ? teaching.getSubject().getId() : null, teaching.getClassId(), teaching.getTeachingGroup()
             )) {
                 errorDetailList.add(TeachingExcelData.ErrorDetail.builder().columnIndex(6).errorMsg("Phân công đã tồn tại").build());
             }

@@ -32,7 +32,7 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public Student createStudent(CreateStudentRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+        User user = userRepository.getUserById(authentication.getPrincipal().toString());
 
         Intern intern = internRepository.findById(request.getIntern().getId()).orElseThrow(() -> new RuntimeException(Constants.InternConstant.INTERN_NOT_FOUND));
 
@@ -53,7 +53,7 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public Student updateStudent(Long id, UpdateStudentRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+        User user = userRepository.getUserById(authentication.getPrincipal().toString());
 
         Student student = studentRepository.findById(id).orElseThrow(()->new RuntimeException(Constants.StudentConstant.STUDENT_NOT_FOUND));
 
@@ -73,7 +73,7 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public Student deleteStudent(Long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+        User user = userRepository.getUserById(authentication.getPrincipal().toString());
         Student student = studentRepository.findById(id).orElseThrow(()->new RuntimeException(Constants.StudentConstant.STUDENT_NOT_FOUND));
 
         if (user != student.getIntern().getInstructor()) {

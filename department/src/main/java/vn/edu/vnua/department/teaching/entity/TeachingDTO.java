@@ -18,8 +18,8 @@ import java.sql.Timestamp;
 @Data
 public class TeachingDTO {
     private Long id;
-    private SubjectDTO subject;
-    private UserBasicDTO teacher;
+    private SubjectBasicDTO subject;
+    private UserDTO teacher;
     private String classId;
     private Integer teachingGroup;
     private MasterDataDTO schoolYear;

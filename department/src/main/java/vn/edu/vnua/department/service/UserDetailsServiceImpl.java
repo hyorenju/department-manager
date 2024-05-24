@@ -11,6 +11,7 @@ import vn.edu.vnua.department.department.entity.DepartmentBasicDTO;
 import vn.edu.vnua.department.department.entity.DepartmentDTO;
 import vn.edu.vnua.department.masterdata.entity.MasterDataDTO;
 import vn.edu.vnua.department.model.authentication.UserDetailsImpl;
+import vn.edu.vnua.department.role.entity.RoleDTO;
 import vn.edu.vnua.department.user.entity.User;
 import vn.edu.vnua.department.user.repository.UserRepository;
 
@@ -31,7 +32,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .email(user.getEmail())
                 .phoneNumber(user.getPhoneNumber())
                 .department(modelMapper.map(user.getDepartment(), DepartmentBasicDTO.class))
-                .roleId(user.getRole().getId())
+                .role(modelMapper.map(user.getRole(), RoleDTO.class))
                 .manage(user.getManage())
                 .note(user.getNote())
                 .password(user.getPassword())

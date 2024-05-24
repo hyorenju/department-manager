@@ -43,7 +43,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
         return new UserLoginResponse(jwt,
-                userDetails.getRoleId(),
+                userDetails.getRole(),
                 userDetails.getId(),
                 userDetails.getFirstName(),
                 userDetails.getLastName(),

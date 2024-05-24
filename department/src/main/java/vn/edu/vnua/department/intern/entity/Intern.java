@@ -23,7 +23,7 @@ public class Intern {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 200, unique = true)
+    @Column(length = 200)
     private String name;
 
     @ManyToOne

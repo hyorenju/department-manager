@@ -40,19 +40,19 @@ public class TeachingController extends BaseController {
 
     @PostMapping("create")
     private ResponseEntity<?> createTeaching(@RequestBody @Valid CreateTeachingRequest request){
-        Teaching response = teachingService.createTeaching(request);
+        TeachingDTO response = modelMapper.map(teachingService.createTeaching(request), TeachingDTO.class);
         return buildItemResponse(response);
     }
 
     @PostMapping("update/{id}")
     private ResponseEntity<?> updateTeaching(@PathVariable Long id, @RequestBody @Valid UpdateTeachingRequest request){
-        Teaching response = teachingService.updateTeaching(id, request);
+        TeachingDTO response = modelMapper.map(teachingService.updateTeaching(id, request), TeachingDTO.class);
         return buildItemResponse(response);
     }
 
     @PostMapping("delete/{id}")
     private ResponseEntity<?> updateTeaching(@PathVariable Long id){
-        Teaching response = teachingService.deleteTeaching(id);
+        TeachingDTO response = modelMapper.map(teachingService.deleteTeaching(id), TeachingDTO.class);
         return buildItemResponse(response);
     }
 

@@ -18,14 +18,14 @@ import java.sql.Timestamp;
 @Data
 public class ExamDTO {
     private Long id;
-    private SubjectBasicDTO subject;
+    private SubjectDTO subject;
     private String classId;
     private Integer examGroup;
     private MasterDataDTO schoolYear;
     private Byte term;
     private Integer cluster;
     private Integer quantity;
-    @JsonFormat(pattern = Constants.DateTimeConstants.DATE_FORMAT, timezone = Constants.DateTimeConstants.TIME_ZONE)
+    @JsonFormat(pattern = Constants.DateTimeConstants.YEAR_MONTH_DAY_FORMAT, timezone = Constants.DateTimeConstants.TIME_ZONE)
     private Timestamp testDay;
     private String testRoom;
     private Integer lessonStart;

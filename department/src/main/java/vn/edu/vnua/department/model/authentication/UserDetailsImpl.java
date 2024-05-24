@@ -36,7 +36,7 @@ public class UserDetailsImpl implements UserDetails {
 
     private DepartmentBasicDTO department;
 
-    private String roleId;
+    private RoleDTO role;
 
     private String manage;
 
@@ -60,14 +60,6 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public String getUsername() {
         return id;
-    }
-
-    public void setRoleId(String roleId) {
-        this.roleId = roleId;
-    }
-
-    public String getRoleId() {
-        return roleId;
     }
 
     @Override

@@ -43,7 +43,7 @@ public class ExamServiceImpl implements ExamService {
     @Override
     public Page<Exam> getExamList(GetExamListRequest request) {
 //        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        User user = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+//        User user = userRepository.getUserById(authentication.getPrincipal().toString());
 //        request.setDepartment(user.getDepartment());
 //
 //        if(request.getSchoolYear()==null || request.getTerm() == null) {
@@ -78,7 +78,7 @@ public class ExamServiceImpl implements ExamService {
         MasterData schoolYear = masterDataRepository.findById(request.getSchoolYear().getId()).orElseThrow(() -> new RuntimeException(Constants.MasterDataConstant.SCHOOL_YEAR_NOT_FOUND));
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User createdBy = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+        User createdBy = userRepository.getUserById(authentication.getPrincipal().toString());
 
         return examRepository.saveAndFlush(Exam.builder()
                 .subject(subject)
@@ -122,11 +122,12 @@ public class ExamServiceImpl implements ExamService {
         MasterData form = masterDataRepository.findById(request.getForm().getId()).orElseThrow(() -> new RuntimeException(Constants.MasterDataConstant.EXAM_FORM_NOT_FOUND));
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User modifiedBy = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+        User modifiedBy = userRepository.getUserById(authentication.getPrincipal().toString());
 
         exam.setTestRoom(request.getTestRoom());
         exam.setQuantity(request.getQuantity());
         exam.setForm(form);
+        exam.setExamCode(request.getExamCode());
         exam.setLecturerTeach(lecturerTeach);
         exam.setProctor1(proctor1);
         exam.setProctor2(proctor2);
@@ -155,7 +156,7 @@ public class ExamServiceImpl implements ExamService {
         List<Integer> lessonSeriesNotAssigned = createLessonSeries(lessonStartNotAssigned, lessonsTestNotAssigned);
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User assigner = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+        User assigner = userRepository.getUserById(authentication.getPrincipal().toString());
 
         Department department = assigner.getDepartment();
         List<User> usersNotAssigned = userRepository.findAllByDepartment(department);

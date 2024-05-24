@@ -343,7 +343,7 @@ public class ExcelServiceImpl implements ExcelService {
 
     private List<TeachingExcelData> storeTeachingData(List<String> teachingStrList) throws ExecutionException, InterruptedException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User createdBy = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+        User createdBy = userRepository.getUserById(authentication.getPrincipal().toString());
 
         List<TeachingExcelData> teachingExcelDataList = new CopyOnWriteArrayList<>();
 
@@ -398,7 +398,7 @@ public class ExcelServiceImpl implements ExcelService {
             return firebaseService.uploadFileByName("loi-import-phan-cong-giang-day.xlsx");
 
         } catch (IOException e) {
-            throw new RuntimeException("Đã có lỗi, không thể ghi file báo lỗi dssv.");
+            throw new RuntimeException("Đã có lỗi, không thể ghi file.");
         }
     }
 
@@ -433,7 +433,7 @@ public class ExcelServiceImpl implements ExcelService {
 
     private List<ExamExcelData> storeExamData(List<String> examStrList) throws ExecutionException, InterruptedException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User createdBy = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+        User createdBy = userRepository.getUserById(authentication.getPrincipal().toString());
 
         List<ExamExcelData> examExcelDataList = new CopyOnWriteArrayList<>();
 
@@ -450,7 +450,7 @@ public class ExcelServiceImpl implements ExcelService {
     private String exportErrorExamList(List<ExamExcelData> examExcelDataList) {
         try {
             Workbook workbook = new XSSFWorkbook();
-            Sheet sheet = workbook.createSheet("loi-import-phan-cong-ky-th");
+            Sheet sheet = workbook.createSheet("loi-import-phan-cong-ky-thi");
 
             // Tạo hàng tiêu đề
             createErrorExamHeader(sheet);
@@ -478,17 +478,17 @@ public class ExcelServiceImpl implements ExcelService {
                 }
             }
 
-            FileOutputStream fos = new FileOutputStream("loi-import-phan-cong-ky-th.xlsx");
+            FileOutputStream fos = new FileOutputStream("loi-import-phan-cong-ky-thi.xlsx");
             workbook.write(fos);
 
             workbook.close();
             fos.close();
 
             //gọi hàm upload firebase
-            return firebaseService.uploadFileByName("loi-import-phan-cong-ky-th.xlsx");
+            return firebaseService.uploadFileByName("loi-import-phan-cong-ky-thi.xlsx");
 
         } catch (IOException e) {
-            throw new RuntimeException("Đã có lỗi, không thể ghi file báo lỗi dssv.");
+            throw new RuntimeException("Đã có lỗi, không thể ghi file.");
         }
     }
 
@@ -558,12 +558,13 @@ public class ExcelServiceImpl implements ExcelService {
         headerRow.createCell(1).setCellValue("Học kỳ");
         headerRow.createCell(2).setCellValue("Khoa");
         headerRow.createCell(3).setCellValue("Bộ môn");
-        headerRow.createCell(4).setCellValue("Môn giảng dạy");
-        headerRow.createCell(5).setCellValue("Giảng viên");
-        headerRow.createCell(6).setCellValue("Mã lớp");
-        headerRow.createCell(7).setCellValue("NMH");
-        headerRow.createCell(8).setCellValue("Trạng thái");
-        headerRow.createCell(9).setCellValue("Ghi chú");
+        headerRow.createCell(4).setCellValue("Mã môn học");
+        headerRow.createCell(5).setCellValue("Tên môn học");
+        headerRow.createCell(6).setCellValue("Giảng viên");
+        headerRow.createCell(7).setCellValue("Mã lớp");
+        headerRow.createCell(8).setCellValue("NMH");
+        headerRow.createCell(9).setCellValue("Trạng thái");
+        headerRow.createCell(10).setCellValue("Ghi chú");
     }
     private void createErrorExamHeader(Sheet sheet) {
         Row headerRow = sheet.createRow(0);
@@ -578,19 +579,20 @@ public class ExcelServiceImpl implements ExcelService {
         headerRow.createCell(8).setCellValue("Nhóm");
         headerRow.createCell(9).setCellValue("Tổ");
         headerRow.createCell(10).setCellValue("Slg");
-        headerRow.createCell(11).setCellValue("Loại đề thi");
-        headerRow.createCell(12).setCellValue("GV giảng dạy");
-        headerRow.createCell(13).setCellValue("Bốc đề");
-        headerRow.createCell(14).setCellValue("In sao đề");
-        headerRow.createCell(15).setCellValue("Coi thi 1");
-        headerRow.createCell(16).setCellValue("Coi thi 2");
-        headerRow.createCell(17).setCellValue("Chấm thi 1");
-        headerRow.createCell(18).setCellValue("Chấm thi 2");
-        headerRow.createCell(19).setCellValue("Nhận đề");
-        headerRow.createCell(20).setCellValue("Nhận bài");
-        headerRow.createCell(21).setCellValue("Giao bài");
-        headerRow.createCell(22).setCellValue("Giao điểm");
-        headerRow.createCell(23).setCellValue("Ghi chú");
+        headerRow.createCell(11).setCellValue("Hình thức");
+        headerRow.createCell(12).setCellValue("Mã đề thi");
+        headerRow.createCell(13).setCellValue("GV giảng dạy");
+        headerRow.createCell(14).setCellValue("Bốc đề");
+        headerRow.createCell(15).setCellValue("In sao đề");
+        headerRow.createCell(16).setCellValue("Coi thi 1");
+        headerRow.createCell(17).setCellValue("Coi thi 2");
+        headerRow.createCell(18).setCellValue("Chấm thi 1");
+        headerRow.createCell(19).setCellValue("Chấm thi 2");
+        headerRow.createCell(20).setCellValue("Nhận đề");
+        headerRow.createCell(21).setCellValue("Nhận bài");
+        headerRow.createCell(22).setCellValue("Giao bài");
+        headerRow.createCell(23).setCellValue("Giao điểm");
+        headerRow.createCell(24).setCellValue("Ghi chú");
     }
 
     private void createExamListHeader(Sheet sheet) {
@@ -599,27 +601,29 @@ public class ExcelServiceImpl implements ExcelService {
         headerRow.createCell(1).setCellValue("Học kỳ");
         headerRow.createCell(2).setCellValue("Khoa");
         headerRow.createCell(3).setCellValue("Bộ môn");
-        headerRow.createCell(4).setCellValue("Môn thi");
-        headerRow.createCell(5).setCellValue("Loại bài thi");
-        headerRow.createCell(6).setCellValue("Ngày thi");
-        headerRow.createCell(7).setCellValue("Phòng thi");
-        headerRow.createCell(8).setCellValue("Tiết bắt đầu");
-        headerRow.createCell(9).setCellValue("Số tiết");
-        headerRow.createCell(10).setCellValue("Lớp thi");
-        headerRow.createCell(11).setCellValue("Nhóm");
-        headerRow.createCell(12).setCellValue("Tổ");
-        headerRow.createCell(13).setCellValue("Sĩ số");
-        headerRow.createCell(14).setCellValue("Giáo viên giảng dạy");
-        headerRow.createCell(15).setCellValue("Giám thị 1");
-        headerRow.createCell(16).setCellValue("Giám thị 2");
-        headerRow.createCell(17).setCellValue("GV chấm thi 1");
-        headerRow.createCell(18).setCellValue("GV chấm thi 2");
-        headerRow.createCell(19).setCellValue("CB bốc đề");
-        headerRow.createCell(20).setCellValue("CB in sao đề");
-        headerRow.createCell(21).setCellValue("CB nhận đề");
-        headerRow.createCell(22).setCellValue("CB nhận bài");
-        headerRow.createCell(23).setCellValue("CB giao bài");
-        headerRow.createCell(24).setCellValue("CB giao điểm");
-        headerRow.createCell(25).setCellValue("Ghi chú");
+        headerRow.createCell(4).setCellValue("Mã môn thi");
+        headerRow.createCell(5).setCellValue("Tên môn thi");
+        headerRow.createCell(6).setCellValue("Hình thức");
+        headerRow.createCell(7).setCellValue("Mã đề thi");
+        headerRow.createCell(8).setCellValue("Ngày thi");
+        headerRow.createCell(9).setCellValue("Phòng thi");
+        headerRow.createCell(10).setCellValue("Tiết bắt đầu");
+        headerRow.createCell(11).setCellValue("Số tiết");
+        headerRow.createCell(12).setCellValue("Lớp thi");
+        headerRow.createCell(13).setCellValue("Nhóm");
+        headerRow.createCell(14).setCellValue("Tổ");
+        headerRow.createCell(15).setCellValue("Sĩ số");
+        headerRow.createCell(16).setCellValue("Giáo viên giảng dạy");
+        headerRow.createCell(17).setCellValue("Giám thị 1");
+        headerRow.createCell(18).setCellValue("Giám thị 2");
+        headerRow.createCell(19).setCellValue("GV chấm thi 1");
+        headerRow.createCell(20).setCellValue("GV chấm thi 2");
+        headerRow.createCell(21).setCellValue("CB bốc đề");
+        headerRow.createCell(22).setCellValue("CB in sao đề");
+        headerRow.createCell(23).setCellValue("CB nhận đề");
+        headerRow.createCell(24).setCellValue("CB nhận bài");
+        headerRow.createCell(25).setCellValue("CB giao bài");
+        headerRow.createCell(26).setCellValue("CB giao điểm");
+        headerRow.createCell(27).setCellValue("Ghi chú");
     }
 }

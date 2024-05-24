@@ -3,6 +3,7 @@ package vn.edu.vnua.department.masterdata.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import vn.edu.vnua.department.common.Constants;
 import vn.edu.vnua.department.masterdata.entity.MasterData;
@@ -11,6 +12,7 @@ import vn.edu.vnua.department.masterdata.repository.MasterDataRepository;
 import vn.edu.vnua.department.masterdata.request.CreateMasterDataRequest;
 import vn.edu.vnua.department.masterdata.request.GetMasterDataListRequest;
 import vn.edu.vnua.department.masterdata.request.UpdateMasterDataRequest;
+import vn.edu.vnua.department.util.MyUtils;
 
 import java.util.List;
 
@@ -23,7 +25,7 @@ public class MasterDataServiceImpl implements MasterDataService{
     @Override
     public List<MasterData> getMasterDataList(GetMasterDataListRequest request) {
         Sort sort;
-        if (Constants.MasterDataTypeConstant.SCHOOL_YEAR.equals(request.getType())) {
+        if (request.getType().equals(Constants.MasterDataTypeConstant.SCHOOL_YEAR)) {
             sort = Sort.by("name").descending();
         } else {
             sort = Sort.by("name").ascending();
@@ -63,5 +65,21 @@ public class MasterDataServiceImpl implements MasterDataService{
         } catch (Exception e) {
             throw new RuntimeException(Constants.MasterDataConstant.CANNOT_DELETE);
         }
+    }
+
+    @Override
+    @Scheduled(cron = "0 0 0 1 5 *")
+    public void createSchoolYear() {
+        MasterData theLastSchoolYear = masterDataRepository.findAllByType(Constants.MasterDataTypeConstant.SCHOOL_YEAR, Sort.by("name").descending()).get(0);
+        Integer lastYear = MyUtils.parseIntegerFromString(theLastSchoolYear.getName().split("-")[0]);
+        String newSchoolYearName = (lastYear+1) + "-" + (lastYear+2);
+
+//        System.out.println(theLastSchoolYear.getName());
+//        System.out.println(newSchoolYearName);
+
+        masterDataRepository.saveAndFlush(MasterData.builder()
+                .name(newSchoolYearName)
+                .type(Constants.MasterDataTypeConstant.SCHOOL_YEAR)
+                .build());
     }
 }

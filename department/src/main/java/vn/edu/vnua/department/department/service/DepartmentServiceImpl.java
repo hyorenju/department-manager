@@ -54,7 +54,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         }
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User createdBy = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+        User createdBy = userRepository.getUserById(authentication.getPrincipal().toString());
 
         Faculty faculty = facultyRepository.findById(request.getFaculty().getId()).orElseThrow(() -> new RuntimeException(Constants.FacultyConstant.FACULTY_NOT_FOUND));
         return departmentRepository.saveAndFlush(
@@ -74,7 +74,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         Faculty faculty = facultyRepository.findById(request.getFaculty().getId()).orElseThrow(() -> new RuntimeException(Constants.FacultyConstant.FACULTY_NOT_FOUND));
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User modifiedBy = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+        User modifiedBy = userRepository.getUserById(authentication.getPrincipal().toString());
 
         department.setName(request.getName());
         department.setFaculty(faculty);

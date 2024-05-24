@@ -49,17 +49,18 @@ public class StoreExamWorker implements Callable<ExamExcelData> {
             String cluster = infoList[9].strip();
             String quantity = infoList[10].strip();
             String examFormName = infoList[11].strip();
-            String lecturerTeachId = infoList[12].strip();
-            String pickerId = infoList[13].strip();
-            String printerId = infoList[14].strip();
-            String proctor1Id = infoList[15].strip();
-            String proctor2Id = infoList[16].strip();
-            String marker1Id = infoList[17].strip();
-            String marker2Id = infoList[18].strip();
-            String questionTakerId = infoList[19].strip();
-            String examTakerId = infoList[20].strip();
-            String examGiverId = infoList[21].strip();
-            String pointGiverId = infoList[22].strip();
+            String examCode = infoList[12].strip();
+            String lecturerTeachId = infoList[13].strip();
+            String pickerId = infoList[14].strip();
+            String printerId = infoList[15].strip();
+            String proctor1Id = infoList[16].strip();
+            String proctor2Id = infoList[17].strip();
+            String marker1Id = infoList[18].strip();
+            String marker2Id = infoList[19].strip();
+            String questionTakerId = infoList[20].strip();
+            String examTakerId = infoList[21].strip();
+            String examGiverId = infoList[22].strip();
+            String pointGiverId = infoList[23].strip();
 
             MasterData schoolYear = masterDataRepository.findByName(schoolYearName);
             Subject subject = subjectRepository.getSubjectById(subjectId);
@@ -89,6 +90,7 @@ public class StoreExamWorker implements Callable<ExamExcelData> {
                     .cluster(StringUtils.hasText(cluster) ? MyUtils.parseIntegerFromString(cluster) : null)
                     .quantity(StringUtils.hasText(quantity) ? MyUtils.parseIntegerFromString(quantity) : null)
                     .form(examForm)
+                    .examCode(StringUtils.hasText(examCode) ? MyUtils.parseIntegerFromString(examCode) : null)
                     .lecturerTeach(lecturerTeach)
                     .picker(picker)
                     .printer(printer)
@@ -148,7 +150,7 @@ public class StoreExamWorker implements Callable<ExamExcelData> {
                 errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(22).errorMsg("GV không tồn tại").build());
             }
             if(examRepository.existsBySubjectIdAndClassIdAndExamGroupAndSchoolYearIdAndTermAndCluster(
-                    exam.getSubject().getId(), exam.getClassId(), exam.getExamGroup(), exam.getSchoolYear().getId(), exam.getTerm(), exam.getCluster()
+                    subject != null ? exam.getSubject().getId() : null, exam.getClassId(), exam.getExamGroup(), schoolYear != null ? exam.getSchoolYear().getId(): null, exam.getTerm(), exam.getCluster()
             )){
                 errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(23).errorMsg("Phân công đã tồn tại").build());
             }

@@ -12,9 +12,11 @@ public interface UserService {
     List<User> getUserSelection(GetUserSelectionRequest request);
     User createUser(CreateUserRequest request);
     User updateUser(String id, UpdateUserRequest request);
+    User updateProfile(UpdateProfileRequest request);
     User transferRole(String id);
     User deleteUser(String id);
     String exportToExcel(ExportUserListRequest request);
+    User changePassword(ChangePasswordRequest request);
 
     // For dev
     User createPrincipal(String id);

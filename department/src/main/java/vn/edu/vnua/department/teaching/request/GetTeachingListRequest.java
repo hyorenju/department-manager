@@ -10,6 +10,7 @@ public class GetTeachingListRequest extends GetPageBaseRequest {
     private Byte term;
     private String facultyId;
     private String departmentId;
+    private String subjectId;
     private String subjectName;
     private String teacherId;
     private String classId;

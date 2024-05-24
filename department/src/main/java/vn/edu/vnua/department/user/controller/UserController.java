@@ -7,7 +7,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import vn.edu.vnua.department.common.Constants;
 import vn.edu.vnua.department.controller.BaseController;
 import vn.edu.vnua.department.user.entity.User;
 import vn.edu.vnua.department.user.entity.UserDTO;
@@ -51,8 +50,15 @@ public class UserController extends BaseController {
     @PostMapping("update/{id}")
 //    @PreAuthorize("hasAnyAuthority('MANAGER', 'DEPUTY')")
     public ResponseEntity<?> updateUser(@PathVariable String id,
-                                           @Valid @RequestBody UpdateUserRequest request) {
+                                        @Valid @RequestBody UpdateUserRequest request) {
         UserDTO response = modelMapper.map(userService.updateUser(id, request), UserDTO.class);
+        return buildItemResponse(response);
+    }
+
+    @PostMapping("update-profile")
+//    @PreAuthorize("hasAnyAuthority('MANAGER', 'DEPUTY')")
+    public ResponseEntity<?> updateMyself(@Valid @RequestBody UpdateProfileRequest request) {
+        UserDTO response = modelMapper.map(userService.updateProfile(request), UserDTO.class);
         return buildItemResponse(response);
     }
 
@@ -76,7 +82,11 @@ public class UserController extends BaseController {
         return buildItemResponse(response);
     }
 
-
+    @PostMapping("change-password")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request){
+        UserDTO response = modelMapper.map(userService.changePassword(request), UserDTO.class);
+        return buildItemResponse(response);
+    }
 
 
     //Dưới đây là api chỉ dành cho postman, front-end dev vui lòng không sử dụng dưới mọi hình thức

@@ -43,7 +43,7 @@ public class FacultyServiceImpl implements FacultyService {
         }
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User createdBy = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+        User createdBy = userRepository.getUserById(authentication.getPrincipal().toString());
 
         return facultyRepository.saveAndFlush(
                 Faculty.builder()
@@ -60,7 +60,7 @@ public class FacultyServiceImpl implements FacultyService {
         Faculty faculty = facultyRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.FacultyConstant.FACULTY_NOT_FOUND));
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User modifiedBy = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+        User modifiedBy = userRepository.getUserById(authentication.getPrincipal().toString());
 
         faculty.setName(request.getName());
         faculty.setModifiedAt(Timestamp.valueOf(LocalDateTime.now()));

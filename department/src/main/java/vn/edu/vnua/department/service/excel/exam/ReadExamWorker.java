@@ -17,7 +17,7 @@ public class ReadExamWorker implements Callable<String> {
     @Override
     public String call() {
         StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < 23; i++) {
+        for (int i = 0; i < 24; i++) {
             Cell cell = row.getCell(i);
             String data = "";
             if (cell != null) {

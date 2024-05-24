@@ -48,7 +48,7 @@ public class InternServiceImpl implements InternService {
             MasterData schoolYear = masterDataRepository.findById(request.getSchoolYear().getId()).orElseThrow(() -> new RuntimeException(Constants.MasterDataConstant.SCHOOL_YEAR_NOT_FOUND));
 
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            User instructor = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+            User instructor = userRepository.getUserById(authentication.getPrincipal().toString());
 
             return internRepository.saveAndFlush(Intern.builder()
                     .name(request.getName())
@@ -73,7 +73,7 @@ public class InternServiceImpl implements InternService {
             Intern intern = internRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.InternConstant.INTERN_NOT_FOUND));
 
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            User user = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+            User user = userRepository.getUserById(authentication.getPrincipal().toString());
 
             if (user != intern.getInstructor()) {
                 throw new RuntimeException(Constants.InternConstant.CANNOT_UPDATE);
@@ -86,10 +86,17 @@ public class InternServiceImpl implements InternService {
             intern.setType(type);
             intern.setSchoolYear(schoolYear);
             intern.setTerm(request.getTerm());
-            intern.setOutlineFile(request.getOutlineFile());
-            intern.setProgressFile(request.getProgressFile());
-            intern.setFinalFile(request.getFinalFile());
             intern.setNote(request.getNote());
+
+            if (StringUtils.hasText(request.getOutlineFile())) {
+                intern.setOutlineFile(request.getOutlineFile());
+            }
+            if (StringUtils.hasText(request.getProgressFile())) {
+                intern.setProgressFile(request.getProgressFile());
+            }
+            if (StringUtils.hasText(request.getFinalFile())) {
+                intern.setFinalFile(request.getFinalFile());
+            }
 
             if (intern.getFinalFile() != null) {
                 intern.setStatus(Constants.StatusConstant.COMPLETED);
@@ -107,7 +114,7 @@ public class InternServiceImpl implements InternService {
         Intern intern = internRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.InternConstant.INTERN_NOT_FOUND));
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+        User user = userRepository.getUserById(authentication.getPrincipal().toString());
 
         if (user != intern.getInstructor()) {
             throw new RuntimeException(Constants.InternConstant.CANNOT_UPDATE);

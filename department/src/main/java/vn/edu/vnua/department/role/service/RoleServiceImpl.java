@@ -23,7 +23,7 @@ public class RoleServiceImpl implements RoleService {
     public List<Role> getRoleSelection() {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+        User user = userRepository.getUserById(authentication.getPrincipal().toString());
 
         switch (user.getRole().getId()) {
             case Constants.RoleIdConstant.PRINCIPAL: {

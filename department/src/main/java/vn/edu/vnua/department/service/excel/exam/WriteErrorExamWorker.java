@@ -34,18 +34,19 @@ public class WriteErrorExamWorker implements Callable<Void> {
         row.createCell(9).setCellValue(exam.getCluster() != null ? exam.getCluster().toString() : "");
         row.createCell(10).setCellValue(exam.getQuantity() != null ? exam.getQuantity().toString() : "");
         row.createCell(11).setCellValue(exam.getForm() != null ? exam.getForm().getName() : "");
-        row.createCell(12).setCellValue(exam.getLecturerTeach() != null ? exam.getLecturerTeach().getId() : "");
-        row.createCell(13).setCellValue(exam.getPicker() != null ? exam.getPicker().getId() : "");
-        row.createCell(14).setCellValue(exam.getPrinter() != null ? exam.getPrinter().getId() : "");
-        row.createCell(15).setCellValue(exam.getProctor1() != null ? exam.getProctor1().getId() : "");
-        row.createCell(16).setCellValue(exam.getProctor2() != null ? exam.getProctor2().getId() : "");
-        row.createCell(17).setCellValue(exam.getMarker1() != null ? exam.getMarker1().getId() : "");
-        row.createCell(18).setCellValue(exam.getMarker2() != null ? exam.getMarker2().getId() : "");
-        row.createCell(19).setCellValue(exam.getQuestionTaker() != null ? exam.getQuestionTaker().getId() : "");
-        row.createCell(20).setCellValue(exam.getExamTaker() != null ? exam.getExamTaker().getId() : "");
-        row.createCell(21).setCellValue(exam.getExamGiver() != null ? exam.getExamGiver().getId() : "");
-        row.createCell(22).setCellValue(exam.getPointGiver() != null ? exam.getPointGiver().getId() : "");
-        row.createCell(23).setCellValue("");
+        row.createCell(12).setCellValue(exam.getExamCode() != null ? exam.getExamCode().toString() : "");
+        row.createCell(13).setCellValue(exam.getLecturerTeach() != null ? exam.getLecturerTeach().getId() : "");
+        row.createCell(14).setCellValue(exam.getPicker() != null ? exam.getPicker().getId() : "");
+        row.createCell(15).setCellValue(exam.getPrinter() != null ? exam.getPrinter().getId() : "");
+        row.createCell(16).setCellValue(exam.getProctor1() != null ? exam.getProctor1().getId() : "");
+        row.createCell(17).setCellValue(exam.getProctor2() != null ? exam.getProctor2().getId() : "");
+        row.createCell(18).setCellValue(exam.getMarker1() != null ? exam.getMarker1().getId() : "");
+        row.createCell(19).setCellValue(exam.getMarker2() != null ? exam.getMarker2().getId() : "");
+        row.createCell(20).setCellValue(exam.getQuestionTaker() != null ? exam.getQuestionTaker().getId() : "");
+        row.createCell(21).setCellValue(exam.getExamTaker() != null ? exam.getExamTaker().getId() : "");
+        row.createCell(22).setCellValue(exam.getExamGiver() != null ? exam.getExamGiver().getId() : "");
+        row.createCell(23).setCellValue(exam.getPointGiver() != null ? exam.getPointGiver().getId() : "");
+        row.createCell(24).setCellValue("");
 
         examExcelData.getErrorDetailList().forEach(errorDetail -> {
             Cell cell = row.getCell(errorDetail.getColumnIndex());

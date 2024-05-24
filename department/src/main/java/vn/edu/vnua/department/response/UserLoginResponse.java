@@ -5,12 +5,13 @@ import lombok.Data;
 import vn.edu.vnua.department.department.entity.DepartmentBasicDTO;
 import vn.edu.vnua.department.department.entity.DepartmentDTO;
 import vn.edu.vnua.department.masterdata.entity.MasterDataDTO;
+import vn.edu.vnua.department.role.entity.RoleDTO;
 
 @Data
 @AllArgsConstructor
 public class UserLoginResponse{
     private String jwt;
-    private String roleId;
+    private RoleDTO role;
     private String id;
     private String firstName;
     private String lastName;

@@ -12,4 +12,7 @@ public interface MasterDataService {
     MasterData createMasterData(CreateMasterDataRequest request);
     MasterData updateMasterData(Long id, UpdateMasterDataRequest request);
     MasterData deleteMasterData(Long id);
+
+    //Schedule
+    void createSchoolYear();
 }

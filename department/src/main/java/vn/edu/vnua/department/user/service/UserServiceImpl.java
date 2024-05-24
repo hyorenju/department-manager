@@ -27,7 +27,8 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
+import java.util.Objects;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -68,7 +69,8 @@ public class UserServiceImpl implements UserService {
     public User createUser(CreateUserRequest request) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            User user = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+//            User user = userRepository.getUserById(authentication.getPrincipal().toString());
+            User user = userRepository.getUserById(authentication.getPrincipal().toString());
 
             if (userRepository.existsById(request.getId())) {
                 throw new RuntimeException(Constants.UserConstant.USER_ALREADY_EXIST);
@@ -88,11 +90,12 @@ public class UserServiceImpl implements UserService {
                 }
             }
 
+            String manage;
             switch (roleId) {
-                case Constants.RoleIdConstant.DEPUTY, Constants.RoleIdConstant.MANAGER -> user.setManage(user.getDepartment().getId());
-                case Constants.RoleIdConstant.DEAN -> user.setManage(user.getDepartment().getFaculty().getId());
-                case Constants.RoleIdConstant.PRINCIPAL -> user.setManage(Constants.SchoolNameAbbreviationConstant.SCHOOL_NAME);
-                default -> user.setManage(null);
+                case Constants.RoleIdConstant.DEPUTY, Constants.RoleIdConstant.MANAGER -> manage = user.getDepartment().getId();
+                case Constants.RoleIdConstant.DEAN -> manage = user.getDepartment().getFaculty().getId();
+                case Constants.RoleIdConstant.PRINCIPAL -> manage = Constants.SchoolNameAbbreviationConstant.SCHOOL_NAME;
+                default -> manage = null;
             }
 
             MasterData degree = masterDataRepository.findById(request.getDegree().getId()).orElseThrow(() -> new RuntimeException(Constants.MasterDataConstant.DEGREE_NOT_FOUND));
@@ -109,6 +112,7 @@ public class UserServiceImpl implements UserService {
                             .password(StringUtils.hasText(request.getPassword()) ? encoder.encode(request.getPassword()) : encoder.encode("123"))
                             .createdAt(Timestamp.valueOf(LocalDateTime.now()))
                             .role(role)
+                            .manage(manage)
                             .note(request.getNote())
                             .build()
             );
@@ -121,7 +125,7 @@ public class UserServiceImpl implements UserService {
     public User updateUser(String id, UpdateUserRequest request) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            User manager = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+            User manager = userRepository.getUserById(authentication.getPrincipal().toString());
             String managerRoleId = manager.getRole().getId();
 
             if (manager.getId().equals(id)) {
@@ -186,22 +190,38 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User updateProfile(UpdateProfileRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User me = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(()->new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+
+        MasterData degree = masterDataRepository.findById(request.getDegree().getId()).orElseThrow(()-> new RuntimeException(Constants.MasterDataConstant.DEGREE_NOT_FOUND));
+
+        me.setFirstName(request.getFirstName());
+        me.setLastName(request.getLastName());
+        me.setDegree(degree);
+        me.setEmail(request.getEmail());
+        me.setPhoneNumber(request.getPhoneNumber());
+
+        return userRepository.saveAndFlush(me);
+    }
+
+    @Override
     public User transferRole(String id) {
         List<User> users = new ArrayList<>();
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User giver = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+        User giver = userRepository.getUserById(authentication.getPrincipal().toString());
 
         User receiver = userRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
         Role lecturer = roleRepository.findById(Constants.RoleIdConstant.LECTURER).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
-        if (!receiver.getRole().equals(lecturer)) {
+        if (!receiver.getRole().getId().equals(Constants.RoleIdConstant.LECTURER)) {
             throw new RuntimeException(Constants.UserConstant.USER_ARE_NOT_LECTURER);
         }
 
         receiver.setRole(giver.getRole());
         receiver.setManage(giver.getManage());
         giver.setRole(lecturer);
-        receiver.setManage(null);
+        giver.setManage(null);
 
         users.add(giver);
         users.add(receiver);
@@ -229,6 +249,29 @@ public class UserServiceImpl implements UserService {
         Specification<User> specification = CustomUserRepository.filterExportUser(request);
         List<User> users = userRepository.findAll(specification);
         return excelService.writeUserToExcel(users);
+    }
+
+    @Override
+    public User changePassword(ChangePasswordRequest request) {
+        Authentication authentication =  SecurityContextHolder.getContext().getAuthentication();
+        User me = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+
+        if(!encoder.matches(request.getCurrentPassword(), me.getPassword())){
+            throw new RuntimeException(Constants.PasswordConstant.WRONG_OLD_PASSWORD);
+        }
+        Pattern pattern = Pattern.compile(Constants.PasswordConstant.PASSWORD_REGEX);
+        if(!pattern.matcher(request.getNewPassword()).matches()) {
+            throw new RuntimeException(Constants.PasswordConstant.WRONG_PASSWORD_REGEX);
+        }
+        if(encoder.matches(request.getNewPassword(), me.getPassword())){
+            throw new RuntimeException(Constants.PasswordConstant.NOT_BE_SAME_OLD_PASSWORD);
+        }
+        if(!Objects.equals(request.getNewPassword(), request.getConfirmPassword())){
+            throw new RuntimeException(Constants.PasswordConstant.BE_SAME_NEW_PASSWORD);
+        }
+
+        me.setPassword(encoder.encode(request.getNewPassword()));
+        return userRepository.saveAndFlush(me);
     }
 
     @Override

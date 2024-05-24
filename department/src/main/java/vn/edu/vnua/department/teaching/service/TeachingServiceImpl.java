@@ -44,7 +44,7 @@ public class TeachingServiceImpl implements TeachingService {
     @Override
     public Page<Teaching> getTeachingList(GetTeachingListRequest request) {
 //        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        User user = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+//        User user = userRepository.getUserById(authentication.getPrincipal().toString());
 //        request.setDepartment(user.getDepartment());
 
 //        if(request.getSchoolYear()==null || request.getTerm() == null) {
@@ -69,6 +69,15 @@ public class TeachingServiceImpl implements TeachingService {
 
     @Override
     public Teaching createTeaching(CreateTeachingRequest request) {
+        User teacher;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User createdBy = userRepository.getUserById(authentication.getPrincipal().toString());
+        if(createdBy.getRole().getId().equals(Constants.RoleIdConstant.LECTURER)){
+            teacher = createdBy;
+        } else {
+            teacher = userRepository.findById(request.getTeacher().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+        }
+
         if(teachingRepository.existsBySchoolYearIdAndTermAndSubjectIdAndClassIdAndTeachingGroup(request.getSchoolYear().getId(),
                 request.getTerm(), request.getSubject().getId(), request.getClassId(), request.getTeachingGroup())) {
             throw new RuntimeException(Constants.TeachingConstant.TEACHING_IS_EXISTED);
@@ -76,10 +85,6 @@ public class TeachingServiceImpl implements TeachingService {
 
         MasterData schoolYear = masterDataRepository.findById(request.getSchoolYear().getId()).orElseThrow(() -> new RuntimeException(Constants.MasterDataConstant.SCHOOL_YEAR_NOT_FOUND));
         Subject subject = subjectRepository.findById(request.getSubject().getId()).orElseThrow(() -> new RuntimeException(Constants.SubjectConstant.SUBJECT_NOT_FOUND));
-        User teacher = userRepository.findById(request.getTeacher().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User createdBy = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
 
         String status;
         if (StringUtils.hasText(request.getComponentFile()) && StringUtils.hasText(request.getSummaryFile())) {
@@ -105,16 +110,25 @@ public class TeachingServiceImpl implements TeachingService {
     public Teaching updateTeaching(Long id, UpdateTeachingRequest request) {
         Teaching teaching = teachingRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.TeachingConstant.TEACHING_NOT_FOUND));
 
-        User teacher = userRepository.findById(request.getTeacher().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
-
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User modifiedBy = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+        User modifiedBy = userRepository.getUserById(authentication.getPrincipal().toString());
+        if(modifiedBy.getRole().getId().equals(Constants.RoleIdConstant.LECTURER) &&
+                teaching.getTeacher() != modifiedBy){
+            throw new RuntimeException(Constants.TeachingConstant.CANNOT_UPDATE);
+        }
 
+        User teacher = userRepository.findById(request.getTeacher().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+        
         teaching.setTeacher(teacher);
-        teaching.setComponentFile(request.getComponentFile());
-        teaching.setSummaryFile(request.getSummaryFile());
         teaching.setModifiedAt(Timestamp.valueOf(LocalDateTime.now()));
         teaching.setModifiedBy(modifiedBy);
+
+        if(StringUtils.hasText(request.getComponentFile())){
+            teaching.setComponentFile(request.getComponentFile());
+        }
+        if(StringUtils.hasText(request.getSummaryFile())){
+            teaching.setSummaryFile(request.getSummaryFile());
+        }
 
         if (teaching.getComponentFile() != null && teaching.getSummaryFile() != null) {
             teaching.setStatus(Constants.StatusConstant.COMPLETED);

@@ -17,6 +17,9 @@ public class UpdateExamRequest {
 
     private CreateMasterDataRequest form;
 
+    @NotNull(message = "Mã đề thi không được để trống")
+    private Integer examCode;
+
     private CreateUserRequest lecturerTeach;
 
     private CreateUserRequest proctor1;
