@@ -51,7 +51,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 userDetails.getEmail(),
                 userDetails.getPhoneNumber(),
                 userDetails.getDepartment(),
-                userDetails.getManage()
+                userDetails.getManage(),
+                userDetails.getAvatar()
         );
     }
 }

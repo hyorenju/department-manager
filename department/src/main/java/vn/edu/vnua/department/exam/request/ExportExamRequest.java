@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class ExportExamRequest {
+    private Boolean isAll;
     private String facultyId;
     private String departmentId;
     private String subjectName;
@@ -11,7 +12,6 @@ public class ExportExamRequest {
     private Byte term;
     private Long formId;
     private String testDay;
-    private String proctor1Id;
-    private String proctor2Id;
+    private String proctorId;
     private String classId;
 }

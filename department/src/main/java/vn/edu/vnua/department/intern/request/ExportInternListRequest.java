@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class ExportInternListRequest {
+    private Boolean isAll;
     private String name;
     private Long schoolYear;
     private Byte term;

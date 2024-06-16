@@ -10,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 import vn.edu.vnua.department.common.Constants;
 import vn.edu.vnua.department.department.entity.Department;
 import vn.edu.vnua.department.department.repository.DepartmentRepository;
@@ -18,11 +19,13 @@ import vn.edu.vnua.department.masterdata.repository.MasterDataRepository;
 import vn.edu.vnua.department.role.entity.Role;
 import vn.edu.vnua.department.role.repository.RoleRepository;
 import vn.edu.vnua.department.service.excel.ExcelService;
+import vn.edu.vnua.department.service.firebase.FirebaseService;
 import vn.edu.vnua.department.user.entity.User;
 import vn.edu.vnua.department.user.repository.CustomUserRepository;
 import vn.edu.vnua.department.user.repository.UserRepository;
 import vn.edu.vnua.department.user.request.*;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -39,6 +42,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder encoder;
     private final MasterDataRepository masterDataRepository;
     private final ExcelService excelService;
+    private final FirebaseService firebaseService;
 
     @Override
     public Page<User> getUserList(GetUserListRequest request) {
@@ -203,6 +207,16 @@ public class UserServiceImpl implements UserService {
         me.setPhoneNumber(request.getPhoneNumber());
 
         return userRepository.saveAndFlush(me);
+    }
+
+    @Override
+    public User updateAvatar(MultipartFile pic) throws IOException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepository.getUserById(authentication.getPrincipal().toString());
+
+        String avatar = firebaseService.uploadMultipartFile(pic);
+        user.setAvatar(avatar);
+        return userRepository.saveAndFlush(user);
     }
 
     @Override

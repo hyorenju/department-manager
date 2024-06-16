@@ -114,40 +114,40 @@ public class StoreExamWorker implements Callable<ExamExcelData> {
                 errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(2).errorMsg("Môn học không tồn tại").build());
             }
             if (examForm == null) {
-                errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(11).errorMsg("Loại không tồn tại").build());
+                errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(11).errorMsg("Hình thức không tồn tại").build());
             }
             if (StringUtils.hasText(lecturerTeachId) && lecturerTeach == null) {
-                errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(12).errorMsg("GV không tồn tại").build());
-            }
-            if (StringUtils.hasText(pickerId) && picker == null) {
                 errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(13).errorMsg("GV không tồn tại").build());
             }
-            if (StringUtils.hasText(printerId) && printer == null) {
+            if (StringUtils.hasText(pickerId) && picker == null) {
                 errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(14).errorMsg("GV không tồn tại").build());
             }
-            if (StringUtils.hasText(proctor1Id) && proctor1 == null) {
+            if (StringUtils.hasText(printerId) && printer == null) {
                 errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(15).errorMsg("GV không tồn tại").build());
             }
-            if (StringUtils.hasText(proctor2Id) && proctor2 == null) {
+            if (StringUtils.hasText(proctor1Id) && proctor1 == null) {
                 errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(16).errorMsg("GV không tồn tại").build());
             }
-            if (StringUtils.hasText(marker1Id) && marker1 == null) {
+            if (StringUtils.hasText(proctor2Id) && proctor2 == null) {
                 errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(17).errorMsg("GV không tồn tại").build());
             }
-            if (StringUtils.hasText(marker2Id) && marker2 == null) {
+            if (StringUtils.hasText(marker1Id) && marker1 == null) {
                 errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(18).errorMsg("GV không tồn tại").build());
             }
-            if (StringUtils.hasText(questionTakerId) && questionTaker == null) {
+            if (StringUtils.hasText(marker2Id) && marker2 == null) {
                 errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(19).errorMsg("GV không tồn tại").build());
             }
-            if (StringUtils.hasText(examTakerId) && examTaker == null) {
+            if (StringUtils.hasText(questionTakerId) && questionTaker == null) {
                 errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(20).errorMsg("GV không tồn tại").build());
             }
-            if (StringUtils.hasText(examGiverId) && examGiver == null) {
+            if (StringUtils.hasText(examTakerId) && examTaker == null) {
                 errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(21).errorMsg("GV không tồn tại").build());
             }
-            if (StringUtils.hasText(pointGiverId) && pointGiver == null) {
+            if (StringUtils.hasText(examGiverId) && examGiver == null) {
                 errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(22).errorMsg("GV không tồn tại").build());
+            }
+            if (StringUtils.hasText(pointGiverId) && pointGiver == null) {
+                errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(23).errorMsg("GV không tồn tại").build());
             }
             if(examRepository.existsBySubjectIdAndClassIdAndExamGroupAndSchoolYearIdAndTermAndCluster(
                     subject != null ? exam.getSubject().getId() : null, exam.getClassId(), exam.getExamGroup(), schoolYear != null ? exam.getSchoolYear().getId(): null, exam.getTerm(), exam.getCluster()

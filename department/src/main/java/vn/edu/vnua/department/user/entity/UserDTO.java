@@ -21,4 +21,5 @@ public class UserDTO {
     private String note;
     private RoleDTO role;
     private String manage;
+    private String avatar;
 }

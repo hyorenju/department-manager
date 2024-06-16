@@ -33,7 +33,7 @@ public class Teaching {
     @JoinColumn(name = "teacher")
     private User teacher;
 
-    @Column(name = "class_id", length = 100)
+    @Column(name = "class_id", length = 200)
     private String classId;
 
     @Column(name = "teaching_group", length = 200)

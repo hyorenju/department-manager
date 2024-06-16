@@ -42,6 +42,8 @@ public class UserDetailsImpl implements UserDetails {
 
     private String note;
 
+    private String avatar;
+
     @JsonIgnore
     private String password;
 

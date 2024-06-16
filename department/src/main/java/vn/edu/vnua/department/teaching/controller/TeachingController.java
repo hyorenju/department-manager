@@ -69,4 +69,12 @@ public class TeachingController extends BaseController {
         String response = teachingService.exportToExcel(request);
         return buildItemResponse(response);
     }
+
+    @PostMapping("read-from-daotao/{teacherId}")
+    public ResponseEntity<?> readFromDaoTao(@PathVariable String teacherId) throws IOException {
+        List<TeachingDTO> response = teachingService.readFromDaoTao(teacherId).stream().map(
+                teaching -> modelMapper.map(teaching, TeachingDTO.class)
+        ).toList();
+        return buildItemResponse(response);
+    }
 }

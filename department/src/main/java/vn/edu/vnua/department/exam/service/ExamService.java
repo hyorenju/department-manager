@@ -20,4 +20,5 @@ public interface ExamService {
     Exam deleteExam(Long id);
     List<Exam> importFromExcel(MultipartFile file) throws IOException, ExecutionException, InterruptedException;
     String exportToExcel(ExportExamRequest request);
+    Exam updateProctor(Long id, UpdateProctorExamRequest request);
 }

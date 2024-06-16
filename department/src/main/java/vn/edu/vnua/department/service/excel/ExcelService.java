@@ -20,6 +20,7 @@ public interface ExcelService {
 
     String writeSubjectToExcel(List<Subject> subjects);
 
+    List<Intern> readInternFromExcel(MultipartFile file) throws IOException, ExecutionException, InterruptedException;
     String writeInternToExcel(List<Intern> interns);
 
     List<Teaching> readTeachingFromExcel(MultipartFile file) throws IOException, ExecutionException, InterruptedException;

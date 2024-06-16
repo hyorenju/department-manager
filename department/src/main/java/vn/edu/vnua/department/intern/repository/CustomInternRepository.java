@@ -23,7 +23,7 @@ public class CustomInternRepository {
         return ((root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (StringUtils.hasText(request.getName())){
-                predicates.add(criteriaBuilder.like(root.get("name"), request.getName() + "%"));
+                predicates.add(criteriaBuilder.like(root.get("name"), "%" + request.getName() + "%"));
             }
             if (request.getSchoolYear()!=null) {
                 predicates.add(criteriaBuilder.equal(root.get("schoolYear").get("id"), request.getSchoolYear()));
@@ -48,7 +48,7 @@ public class CustomInternRepository {
 
             query.orderBy(
                     criteriaBuilder.desc(root.get("schoolYear").get("name")),
-                    criteriaBuilder.asc(root.get("term")),
+                    criteriaBuilder.desc(root.get("term")),
                     criteriaBuilder.asc(root.get("instructor").get("department").get("faculty").get("name")),
                     criteriaBuilder.asc(root.get("instructor").get("department").get("name")),
                     criteriaBuilder.asc(root.get("instructor").get("id")),
@@ -62,7 +62,7 @@ public class CustomInternRepository {
         return ((root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (StringUtils.hasText(request.getName())){
-                predicates.add(criteriaBuilder.like(root.get("name"), request.getName() + "%"));
+                predicates.add(criteriaBuilder.like(root.get("name"), "%" + request.getName() + "%"));
             }
             if (request.getSchoolYear()!=null) {
                 predicates.add(criteriaBuilder.equal(root.get("schoolYear").get("id"), request.getSchoolYear()));
@@ -87,7 +87,7 @@ public class CustomInternRepository {
 
             query.orderBy(
                     criteriaBuilder.desc(root.get("schoolYear").get("name")),
-                    criteriaBuilder.asc(root.get("term")),
+                    criteriaBuilder.desc(root.get("term")),
                     criteriaBuilder.asc(root.get("instructor").get("department").get("faculty").get("name")),
                     criteriaBuilder.asc(root.get("instructor").get("department").get("name")),
                     criteriaBuilder.asc(root.get("instructor").get("id")),

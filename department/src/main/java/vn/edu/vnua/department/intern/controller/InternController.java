@@ -6,7 +6,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import vn.edu.vnua.department.controller.BaseController;
+import vn.edu.vnua.department.exam.entity.ExamDTO;
 import vn.edu.vnua.department.intern.entity.Intern;
 import vn.edu.vnua.department.intern.entity.InternDTO;
 import vn.edu.vnua.department.intern.request.CreateInternRequest;
@@ -15,7 +17,9 @@ import vn.edu.vnua.department.intern.request.GetInternListRequest;
 import vn.edu.vnua.department.intern.request.UpdateInternRequest;
 import vn.edu.vnua.department.intern.service.InternService;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("intern")
@@ -48,6 +52,14 @@ public class InternController extends BaseController {
     @PostMapping("delete/{id}")
     public ResponseEntity<?> deleteIntern(@PathVariable Long id) {
         InternDTO response = modelMapper.map(internService.deleteIntern(id), InternDTO.class);
+        return buildItemResponse(response);
+    }
+
+    @PostMapping("import")
+    public ResponseEntity<?> importInternList(MultipartFile file) throws IOException, ExecutionException, InterruptedException {
+        List<InternDTO> response = internService.importFromExcel(file).stream().map(
+                intern -> modelMapper.map(intern, InternDTO.class)
+        ).toList();
         return buildItemResponse(response);
     }
 

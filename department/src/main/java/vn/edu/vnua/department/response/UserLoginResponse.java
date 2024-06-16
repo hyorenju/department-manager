@@ -20,4 +20,5 @@ public class UserLoginResponse{
     private String phoneNumber;
     private DepartmentBasicDTO department;
     private String manage;
+    private String avatar;
 }

@@ -42,26 +42,22 @@ public class ExamServiceImpl implements ExamService {
 
     @Override
     public Page<Exam> getExamList(GetExamListRequest request) {
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        User user = userRepository.getUserById(authentication.getPrincipal().toString());
-//        request.setDepartment(user.getDepartment());
-//
-//        if(request.getSchoolYear()==null || request.getTerm() == null) {
-//            Date date = new Date();
-//            int year = date.getYear() + 1900;
-//            int month = date.getMonth() + 1;
-//
-//            String schoolYear = year + "-" + (year + 1);
-//            Byte term = 1;
-//            if ((month + 1) < 7) {
-//                schoolYear = (year - 1) + "-" + year;
-//                term = 2;
-//            }
-//            Long schoolYearId = masterDataRepository.findByName(schoolYear).getId();
-//
-//            request.setTerm(term);
-//            request.setSchoolYear(schoolYearId);
-//        }
+        if(!request.getIsAll()) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            User proctor = userRepository.getUserById(authentication.getPrincipal().toString());
+
+            Timestamp currentDate = Timestamp.valueOf(LocalDateTime.now());
+            int month = currentDate.getMonth() + 1;
+            int year = currentDate.getYear() + 1900;
+            int term = month > 6 ? 1 : 2;
+            String schoolYearName = month > 6 ? (year+"-"+(year+1)) : ((year-1)+"-"+year);
+
+            MasterData schoolYear = masterDataRepository.findByName(schoolYearName);
+
+            request.setProctorId(proctor.getId());
+            request.setTerm((byte) term);
+            request.setSchoolYear(schoolYear.getId());
+        }
         Specification<Exam> specification = CustomExamRepository.filterExamList(request);
         return examRepository.findAll(specification, PageRequest.of(request.getPage() - 1, request.getSize()));
     }
@@ -195,9 +191,45 @@ public class ExamServiceImpl implements ExamService {
 
     @Override
     public String exportToExcel(ExportExamRequest request) {
+        if(!request.getIsAll()) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            User proctor = userRepository.getUserById(authentication.getPrincipal().toString());
+
+            Timestamp currentDate = Timestamp.valueOf(LocalDateTime.now());
+            int month = currentDate.getMonth() + 1;
+            int year = currentDate.getYear() + 1900;
+            int term = month > 6 ? 1 : 2;
+            String schoolYearName = month > 6 ? (year+"-"+(year+1)) : ((year-1)+"-"+year);
+
+            MasterData schoolYear = masterDataRepository.findByName(schoolYearName);
+
+            request.setProctorId(proctor.getId());
+            request.setTerm((byte) term);
+            request.setSchoolYear(schoolYear.getId());
+        }
         Specification<Exam> specification = CustomExamRepository.filterExportExam(request);
         List<Exam> exams = examRepository.findAll(specification);
         return excelService.writeExamToExcel(exams);
+    }
+
+    @Override
+    public Exam updateProctor(Long id, UpdateProctorExamRequest request) {
+        Exam exam = examRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.ExamConstant.EXAM_NOT_FOUND));
+        if(request.getProctor1().getId().equals(request.getProctor2().getId())){
+            throw new RuntimeException(Constants.ExamConstant.PROCTORS_NOT_BE_SAME);
+        }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User modifiedBy = userRepository.getUserById(authentication.getPrincipal().toString());
+
+        User proctor1 = userRepository.findById(request.getProctor1().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+        User proctor2 = userRepository.findById(request.getProctor2().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+
+        exam.setProctor1(proctor1);
+        exam.setProctor2(proctor2);
+        exam.setModifiedBy(modifiedBy);
+
+        return examRepository.saveAndFlush(exam);
     }
 
     private List<Integer> createLessonSeries(Integer lessonStart, Integer lessonsTest) {

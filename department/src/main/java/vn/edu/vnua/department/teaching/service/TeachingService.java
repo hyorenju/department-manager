@@ -19,4 +19,5 @@ public interface TeachingService {
     Teaching deleteTeaching(Long id);
     List<Teaching> importFromExcel(MultipartFile file) throws IOException, ExecutionException, InterruptedException;
     String exportToExcel(ExportTeachingRequest request);
+    List<Teaching> readFromDaoTao(String teacherId) throws IOException;
 }

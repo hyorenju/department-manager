@@ -79,6 +79,7 @@ public interface Constants {
         String INTERN_NOT_FOUND = "Không tìm thấy đề tài thực tập";
         String CANNOT_UPDATE = "Bạn chỉ có thể sửa, xóa nếu bạn là giáo viên hướng dẫn của đề tài này";
         String NAME_IS_EXISTED = "Tên đề tài đã tồn tại";
+        String INTERN_NAME_REGEX = "^[\\p{L}\\d\\s.,;…]*$";
     }
 
     interface StudentConstant {
@@ -106,8 +107,8 @@ public interface Constants {
 
     interface TeachingConstant{
         String TEACHING_NOT_FOUND = "Không tìm thấy phân công giảng dạy";
-        String TEACHING_IS_EXISTED = "Phân công này đã tồn tại, vui lòng kiểm tra lại";
-        String CANNOT_UPDATE = "Bạn không thể sửa phân công giảng dạy của giảng viên khác";
+        String TEACHING_IS_EXISTED = "Phân công này đã tồn tại";
+        String CANNOT_UPDATE = "Bạn không thể thêm, sửa, xóa phân công giảng dạy của giảng viên khác";
     }
 
     interface ExamConstant{

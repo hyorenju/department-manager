@@ -17,4 +17,5 @@ public interface UserRepository extends JpaRepository<User, String>, JpaSpecific
     List<User> findAllByDepartment(Department department);
     List<User> findAllByDepartmentId(String id);
     List<User> findAllByDepartmentFacultyId(String id);
+    boolean existsById(String id);
 }

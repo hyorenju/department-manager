@@ -30,7 +30,7 @@ public class Exam {
     @JoinColumn(name = "subject_id")
     private Subject subject;
 
-    @Column(name = "class_id", length = 100)
+    @Column(name = "class_id")
     private String classId;
 
     @Column(name = "exam_group")

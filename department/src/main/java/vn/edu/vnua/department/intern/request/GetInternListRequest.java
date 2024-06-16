@@ -7,6 +7,7 @@ import vn.edu.vnua.department.user.entity.User;
 
 @Data
 public class GetInternListRequest extends GetPageBaseRequest {
+    private Boolean isAll;
     private String name;
     private Long schoolYear;
     private Byte term;

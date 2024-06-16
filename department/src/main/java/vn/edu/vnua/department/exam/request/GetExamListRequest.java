@@ -7,6 +7,7 @@ import vn.edu.vnua.department.request.GetPageBaseRequest;
 
 @Data
 public class GetExamListRequest extends GetPageBaseRequest {
+    private Boolean isAll;
     private String facultyId;
     private String departmentId;
     private String subjectName;
@@ -14,7 +15,6 @@ public class GetExamListRequest extends GetPageBaseRequest {
     private Byte term;
     private Long formId;
     private String testDay;
-    private String proctor1Id;
-    private String proctor2Id;
+    private String proctorId;
     private String classId;
 }

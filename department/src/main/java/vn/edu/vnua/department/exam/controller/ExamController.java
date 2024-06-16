@@ -10,10 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import vn.edu.vnua.department.controller.BaseController;
 import vn.edu.vnua.department.exam.entity.Exam;
 import vn.edu.vnua.department.exam.entity.ExamDTO;
-import vn.edu.vnua.department.exam.request.CreateExamRequest;
-import vn.edu.vnua.department.exam.request.ExportExamRequest;
-import vn.edu.vnua.department.exam.request.GetExamListRequest;
-import vn.edu.vnua.department.exam.request.UpdateExamRequest;
+import vn.edu.vnua.department.exam.request.*;
 import vn.edu.vnua.department.exam.service.ExamService;
 import vn.edu.vnua.department.teaching.entity.TeachingDTO;
 import vn.edu.vnua.department.teaching.request.ExportTeachingRequest;
@@ -77,6 +74,12 @@ public class ExamController extends BaseController {
     @PostMapping("export")
     public ResponseEntity<?> exportTeachingList(@RequestBody @Valid ExportExamRequest request) {
         String response = examService.exportToExcel(request);
+        return buildItemResponse(response);
+    }
+
+    @PostMapping("update-proctor/{id}")
+    private ResponseEntity<?> UpdateProctorExam(@PathVariable Long id, @RequestBody @Valid UpdateProctorExamRequest request) throws ParseException {
+        ExamDTO response = modelMapper.map(examService.updateProctor(id,request), ExamDTO.class);
         return buildItemResponse(response);
     }
 }

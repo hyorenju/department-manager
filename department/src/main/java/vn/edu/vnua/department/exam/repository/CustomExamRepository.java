@@ -7,6 +7,7 @@ import org.springframework.util.StringUtils;
 import vn.edu.vnua.department.exam.entity.Exam;
 import vn.edu.vnua.department.exam.request.ExportExamRequest;
 import vn.edu.vnua.department.exam.request.GetExamListRequest;
+import vn.edu.vnua.department.util.CriteriaBuilderUtil;
 import vn.edu.vnua.department.util.MyUtils;
 
 import java.text.ParseException;
@@ -42,19 +43,23 @@ public class CustomExamRepository {
                     e.printStackTrace();
                 }
             }
-            if(StringUtils.hasText(request.getProctor1Id())){
-                predicates.add(criteriaBuilder.like(root.get("proctor1").get("id"), request.getProctor1Id()));
-            }
-            if(StringUtils.hasText(request.getProctor2Id())){
-                predicates.add(criteriaBuilder.like(root.get("proctor2").get("id"), request.getProctor2Id()));
+//            if(StringUtils.hasText(request.getProctorId())){
+//                predicates.add(criteriaBuilder.like(root.get("proctor1").get("id"), request.getProctorId()));
+//                predicates.add(criteriaBuilder.like(root.get("proctor2").get("id"), request.getProctorId()));
+//            }
+            if (StringUtils.hasText(request.getProctorId())) {
+                predicates.add(
+                        CriteriaBuilderUtil.createPredicateForSearchInsensitive(root, criteriaBuilder, request.getProctorId(),
+                                "proctor1", "proctor2")
+                );
             }
             if(StringUtils.hasText(request.getClassId())){
-                predicates.add(criteriaBuilder.like(root.get("classId"), request.getClassId() + "%"));
+                predicates.add(criteriaBuilder.like(root.get("classId"), "%" + request.getClassId() + "%"));
             }
 
             query.orderBy(
                     criteriaBuilder.desc(root.get("schoolYear").get("name")),
-                    criteriaBuilder.asc(root.get("term")),
+                    criteriaBuilder.desc(root.get("term")),
                     criteriaBuilder.asc(root.get("subject").get("department").get("faculty").get("name")),
                     criteriaBuilder.asc(root.get("subject").get("department").get("name")),
                     criteriaBuilder.asc(root.get("testDay")),
@@ -93,19 +98,23 @@ public class CustomExamRepository {
                     e.printStackTrace();
                 }
             }
-            if(StringUtils.hasText(request.getProctor1Id())){
-                predicates.add(criteriaBuilder.like(root.get("proctor1").get("id"), request.getProctor1Id()));
-            }
-            if(StringUtils.hasText(request.getProctor2Id())){
-                predicates.add(criteriaBuilder.like(root.get("proctor2").get("id"), request.getProctor2Id()));
+//            if(StringUtils.hasText(request.getProctorId())){
+//                predicates.add(criteriaBuilder.like(root.get("proctor1").get("id"), request.getProctorId()));
+//                predicates.add(criteriaBuilder.like(root.get("proctor2").get("id"), request.getProctorId()));
+//            }
+            if (StringUtils.hasText(request.getProctorId())) {
+                predicates.add(
+                        CriteriaBuilderUtil.createPredicateForSearchInsensitive(root, criteriaBuilder, request.getProctorId(),
+                                "proctor1", "proctor2")
+                );
             }
             if(StringUtils.hasText(request.getClassId())){
-                predicates.add(criteriaBuilder.like(root.get("classId"), request.getClassId() + "%"));
+                predicates.add(criteriaBuilder.like(root.get("classId"), "%" + request.getClassId() + "%"));
             }
 
             query.orderBy(
                     criteriaBuilder.desc(root.get("schoolYear").get("name")),
-                    criteriaBuilder.asc(root.get("term")),
+                    criteriaBuilder.desc(root.get("term")),
                     criteriaBuilder.asc(root.get("subject").get("department").get("faculty").get("name")),
                     criteriaBuilder.asc(root.get("subject").get("department").get("name")),
                     criteriaBuilder.asc(root.get("testDay")),

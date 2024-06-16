@@ -6,6 +6,7 @@ import vn.edu.vnua.department.request.GetPageBaseRequest;
 
 @Data
 public class GetTeachingListRequest extends GetPageBaseRequest {
+    private Boolean isAll;
     private Long schoolYear;
     private Byte term;
     private String facultyId;

@@ -69,6 +69,10 @@ public class User {
     @Column(name = "manage", length = 100)
     private String manage;
 
+    @Column(name = "avatar", length = 2000)
+    private String avatar;
+
+
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
         if (role != null) {

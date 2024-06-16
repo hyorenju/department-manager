@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 import vn.edu.vnua.department.common.Constants;
 import vn.edu.vnua.department.department.entity.Department;
 import vn.edu.vnua.department.intern.entity.Intern;
@@ -24,8 +25,13 @@ import vn.edu.vnua.department.service.excel.ExcelService;
 import vn.edu.vnua.department.user.entity.User;
 import vn.edu.vnua.department.user.repository.UserRepository;
 
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +43,22 @@ public class InternServiceImpl implements InternService {
 
     @Override
     public Page<Intern> getInternList(GetInternListRequest request) {
+        if(!request.getIsAll()) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            User instructor = userRepository.getUserById(authentication.getPrincipal().toString());
+
+            Timestamp currentDate = Timestamp.valueOf(LocalDateTime.now());
+            int month = currentDate.getMonth() + 1;
+            int year = currentDate.getYear() + 1900;
+            int term = month > 6 ? 1 : 2;
+            String schoolYearName = month > 6 ? (year+"-"+(year+1)) : ((year-1)+"-"+year);
+
+            MasterData schoolYear = masterDataRepository.findByName(schoolYearName);
+
+            request.setInstructorId(instructor.getId());
+            request.setTerm((byte) term);
+            request.setSchoolYear(schoolYear.getId());
+        }
         Specification<Intern> specification = CustomInternRepository.filterInternList(request);
         return internRepository.findAll(specification, PageRequest.of(request.getPage() - 1, request.getSize()));
     }
@@ -125,7 +147,28 @@ public class InternServiceImpl implements InternService {
     }
 
     @Override
+    public List<Intern> importFromExcel(MultipartFile file) throws IOException, ExecutionException, InterruptedException {
+        return internRepository.saveAll(excelService.readInternFromExcel(file));
+    }
+
+    @Override
     public String exportToExcel(ExportInternListRequest request) {
+        if(!request.getIsAll()) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            User instructor = userRepository.getUserById(authentication.getPrincipal().toString());
+
+            Timestamp currentDate = Timestamp.valueOf(LocalDateTime.now());
+            int month = currentDate.getMonth() + 1;
+            int year = currentDate.getYear() + 1900;
+            int term = month > 6 ? 1 : 2;
+            String schoolYearName = month > 6 ? (year+"-"+(year+1)) : ((year-1)+"-"+year);
+
+            MasterData schoolYear = masterDataRepository.findByName(schoolYearName);
+
+            request.setInstructorId(instructor.getId());
+            request.setTerm((byte) term);
+            request.setSchoolYear(schoolYear.getId());
+        }
         Specification<Intern> specification = CustomInternRepository.filterExportIntern(request);
         List<Intern> interns = internRepository.findAll(specification);
         return excelService.writeInternToExcel(interns);
