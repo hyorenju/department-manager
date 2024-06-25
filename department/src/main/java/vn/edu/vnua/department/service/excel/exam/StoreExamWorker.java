@@ -152,7 +152,7 @@ public class StoreExamWorker implements Callable<ExamExcelData> {
             if(examRepository.existsBySubjectIdAndClassIdAndExamGroupAndSchoolYearIdAndTermAndCluster(
                     subject != null ? exam.getSubject().getId() : null, exam.getClassId(), exam.getExamGroup(), schoolYear != null ? exam.getSchoolYear().getId(): null, exam.getTerm(), exam.getCluster()
             )){
-                errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(23).errorMsg("Phân công đã tồn tại").build());
+                errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(24).errorMsg("Phân công đã tồn tại").build());
             }
 
             examExcelData.setExam(exam);

@@ -344,7 +344,7 @@ public class ExcelServiceImpl implements ExcelService {
                 stringList.add(future.get());
             } else {
                 if (row == null || row.getCell(0) == null) {
-                    throw new RuntimeException(Constants.ExcelConstant.DATA_NOT_FOUND);
+                    throw new RuntimeException("DATA_NOT_FOUND");
                 }
             }
         }
@@ -430,7 +430,7 @@ public class ExcelServiceImpl implements ExcelService {
                 stringList.add(future.get());
             } else {
                 if (row == null || row.getCell(0) == null) {
-                    throw new RuntimeException(Constants.ExcelConstant.DATA_NOT_FOUND);
+                    throw new RuntimeException("DATA_NOT_FOUND");
                 }
             }
         }
@@ -520,7 +520,7 @@ public class ExcelServiceImpl implements ExcelService {
                 stringList.add(future.get());
             } else {
                 if (row == null || row.getCell(0) == null) {
-                    throw new RuntimeException(Constants.ExcelConstant.DATA_NOT_FOUND);
+                    throw new RuntimeException("DATA_NOT_FOUND");
                 }
             }
         }

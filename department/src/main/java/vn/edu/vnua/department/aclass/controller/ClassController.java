@@ -30,7 +30,7 @@ public class ClassController extends BaseController {
         List<ClassDTO> response = page.getContent().stream().map(
                 aClass -> modelMapper.map(aClass, ClassDTO.class)
         ).toList();
-        return buildPageItemResponse(request.getPage(), request.getSize(), page.getTotalElements(), response);
+        return buildPageItemResponse(request.getPage(), response.size(), page.getTotalElements(), response);
     }
 
     @PostMapping("create")

@@ -24,6 +24,9 @@ public class Student {
     @Column(name = "name", length = 200)
     private String name;
 
+    @Column(name = "class_id", length = 100)
+    private String classId;
+
     @Column(name = "phone_number", length = 200)
     private String phoneNumber;
 

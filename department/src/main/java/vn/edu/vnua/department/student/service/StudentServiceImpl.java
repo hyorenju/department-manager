@@ -43,6 +43,7 @@ public class StudentServiceImpl implements StudentService {
         return studentRepository.saveAndFlush(Student.builder()
                 .studentId(request.getStudentId())
                 .name(request.getName())
+                .classId(request.getClassId())
                 .phoneNumber(request.getPhoneNumber())
                 .company(request.getCompany())
                 .intern(intern)
@@ -63,6 +64,7 @@ public class StudentServiceImpl implements StudentService {
 
         student.setStudentId(request.getStudentId());
         student.setName(request.getName());
+        student.setClassId(request.getClassId());
         student.setPhoneNumber(request.getPhoneNumber());
         student.setCompany(request.getCompany());
         student.setNote(request.getNote());

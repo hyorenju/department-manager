@@ -10,6 +10,7 @@ public class StudentDTO {
     private Long id;
     private String studentId;
     private String name;
+    private String classId;
     private String phoneNumber;
     private String company;
     private InternBasicDTO intern;

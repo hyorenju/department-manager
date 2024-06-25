@@ -46,8 +46,8 @@ public class CustomTeachingRepository {
             query.orderBy(
                     criteriaBuilder.desc(root.get("schoolYear").get("name")),
                     criteriaBuilder.desc(root.get("term")),
-                    criteriaBuilder.asc(root.get("subject").get("department").get("faculty").get("name")),
-                    criteriaBuilder.asc(root.get("subject").get("department").get("name")),
+                    criteriaBuilder.asc(root.get("teacher").get("department").get("faculty").get("name")),
+                    criteriaBuilder.asc(root.get("teacher").get("department").get("name")),
                     criteriaBuilder.asc(root.get("subject").get("name")),
                     criteriaBuilder.asc(root.get("teacher").get("lastName")),
                     criteriaBuilder.asc(root.get("status"))
@@ -85,8 +85,8 @@ public class CustomTeachingRepository {
             query.orderBy(
                     criteriaBuilder.desc(root.get("schoolYear").get("name")),
                     criteriaBuilder.desc(root.get("term")),
-                    criteriaBuilder.asc(root.get("subject").get("department").get("faculty").get("name")),
-                    criteriaBuilder.asc(root.get("subject").get("department").get("name")),
+                    criteriaBuilder.asc(root.get("teacher").get("department").get("faculty").get("name")),
+                    criteriaBuilder.asc(root.get("teacher").get("department").get("name")),
                     criteriaBuilder.asc(root.get("subject").get("name")),
                     criteriaBuilder.asc(root.get("teacher").get("lastName")),
                     criteriaBuilder.asc(root.get("status"))
