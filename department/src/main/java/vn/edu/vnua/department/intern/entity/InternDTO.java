@@ -19,4 +19,5 @@ public class InternDTO {
     private String finalFile;
     private String status;
     private String note;
+    private Boolean isLock;
 }

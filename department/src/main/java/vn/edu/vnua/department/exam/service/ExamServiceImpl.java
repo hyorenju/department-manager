@@ -46,17 +46,17 @@ public class ExamServiceImpl implements ExamService {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             User proctor = userRepository.getUserById(authentication.getPrincipal().toString());
 
-            Timestamp currentDate = Timestamp.valueOf(LocalDateTime.now());
-            int month = currentDate.getMonth() + 1;
-            int year = currentDate.getYear() + 1900;
-            int term = month > 6 ? 1 : 2;
-            String schoolYearName = month > 6 ? (year+"-"+(year+1)) : ((year-1)+"-"+year);
+//            Timestamp currentDate = Timestamp.valueOf(LocalDateTime.now());
+//            int month = currentDate.getMonth() + 1;
+//            int year = currentDate.getYear() + 1900;
+//            int term = month > 6 ? 1 : 2;
+//            String schoolYearName = month > 6 ? (year+"-"+(year+1)) : ((year-1)+"-"+year);
 
-            MasterData schoolYear = masterDataRepository.findByName(schoolYearName);
+//            MasterData schoolYear = masterDataRepository.findByName(schoolYearName);
 
             request.setProctorId(proctor.getId());
-            request.setTerm((byte) term);
-            request.setSchoolYear(schoolYear.getId());
+//            request.setTerm((byte) term);
+//            request.setSchoolYear(schoolYear.getId());
         }
         Specification<Exam> specification = CustomExamRepository.filterExamList(request);
         return examRepository.findAll(specification, PageRequest.of(request.getPage() - 1, request.getSize()));
@@ -195,17 +195,17 @@ public class ExamServiceImpl implements ExamService {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             User proctor = userRepository.getUserById(authentication.getPrincipal().toString());
 
-            Timestamp currentDate = Timestamp.valueOf(LocalDateTime.now());
-            int month = currentDate.getMonth() + 1;
-            int year = currentDate.getYear() + 1900;
-            int term = month > 6 ? 1 : 2;
-            String schoolYearName = month > 6 ? (year+"-"+(year+1)) : ((year-1)+"-"+year);
+//            Timestamp currentDate = Timestamp.valueOf(LocalDateTime.now());
+//            int month = currentDate.getMonth() + 1;
+//            int year = currentDate.getYear() + 1900;
+//            int term = month > 6 ? 1 : 2;
+//            String schoolYearName = month > 6 ? (year+"-"+(year+1)) : ((year-1)+"-"+year);
 
-            MasterData schoolYear = masterDataRepository.findByName(schoolYearName);
+//            MasterData schoolYear = masterDataRepository.findByName(schoolYearName);
 
             request.setProctorId(proctor.getId());
-            request.setTerm((byte) term);
-            request.setSchoolYear(schoolYear.getId());
+//            request.setTerm((byte) term);
+//            request.setSchoolYear(schoolYear.getId());
         }
         Specification<Exam> specification = CustomExamRepository.filterExportExam(request);
         List<Exam> exams = examRepository.findAll(specification);
@@ -227,6 +227,7 @@ public class ExamServiceImpl implements ExamService {
 
         exam.setProctor1(proctor1);
         exam.setProctor2(proctor2);
+        exam.setModifiedAt(Timestamp.valueOf(LocalDateTime.now()));
         exam.setModifiedBy(modifiedBy);
 
         return examRepository.saveAndFlush(exam);

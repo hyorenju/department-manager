@@ -39,7 +39,7 @@ public class FacultyServiceImpl implements FacultyService {
     @Override
     public Faculty createFaculty(CreateFacultyRequest request) {
         if (facultyRepository.existsById(request.getId())) {
-            throw new RuntimeException(Constants.FacultyConstant.FACULTY_ALREADY_EXIST);
+            throw new RuntimeException(Constants.FacultyConstant.FACULTY_EXISTED);
         }
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

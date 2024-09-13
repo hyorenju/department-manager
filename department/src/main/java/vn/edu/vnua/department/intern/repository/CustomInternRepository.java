@@ -1,20 +1,15 @@
 package vn.edu.vnua.department.intern.repository;
 
 import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
-import vn.edu.vnua.department.department.entity.Department;
-import vn.edu.vnua.department.department.request.GetDepartmentListRequest;
 import vn.edu.vnua.department.intern.entity.Intern;
 import vn.edu.vnua.department.intern.request.ExportInternListRequest;
 import vn.edu.vnua.department.intern.request.GetInternListRequest;
-import vn.edu.vnua.department.masterdata.repository.MasterDataRepository;
-import vn.edu.vnua.department.util.CriteriaBuilderUtil;
+import vn.edu.vnua.department.intern.request.LockInternListRequest;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -93,6 +88,24 @@ public class CustomInternRepository {
                     criteriaBuilder.asc(root.get("instructor").get("id")),
                     criteriaBuilder.asc(root.get("name"))
             );
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        });
+    }
+
+    public static Specification<Intern> filterLockInternList(LockInternListRequest request) {
+        return ((root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            if (request.getWantLock()){
+                predicates.add(criteriaBuilder.isFalse(root.get("isLock")));
+            } else if(!request.getWantLock()){
+                predicates.add(criteriaBuilder.isTrue(root.get("isLock")));
+            }
+            if(request.getSchoolYearId()!=null){
+                predicates.add(criteriaBuilder.equal(root.get("schoolYear").get("id"), request.getSchoolYearId()));
+            }
+            if(request.getTerm()!=null){
+                predicates.add(criteriaBuilder.equal(root.get("term"), request.getTerm()));
+            }
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         });
     }

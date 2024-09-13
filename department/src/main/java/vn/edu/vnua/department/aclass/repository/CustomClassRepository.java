@@ -26,8 +26,20 @@ public class CustomClassRepository {
                                 "id", "name")
                 );
             }
+            if (StringUtils.hasText(request.getId())){
+                predicates.add(criteriaBuilder.like(root.get("id"), "%" + request.getId() + "%"));
+            }
+            if (StringUtils.hasText(request.getName())){
+                predicates.add(criteriaBuilder.like(root.get("name"), "%" + request.getName() + "%"));
+            }
+            if (StringUtils.hasText(request.getHrTeacher())){
+                predicates.add(criteriaBuilder.like(root.get("hrTeacher"), "%" + request.getHrTeacher() + "%"));
+            }
+            if (StringUtils.hasText(request.getMonitor())){
+                predicates.add(criteriaBuilder.like(root.get("monitor"), "%" + request.getMonitor() + "%"));
+            }
             if (StringUtils.hasText(request.getFacultyId())){
-                predicates.add(criteriaBuilder.like(root.get("faculty").get("id"), request.getFacultyId()));
+                predicates.add(criteriaBuilder.like(root.get("faculty").get("id"), "%" + request.getFacultyId() + "%"));
             }
             query.orderBy(
                     criteriaBuilder.desc(root.get("createdAt"))
@@ -45,8 +57,20 @@ public class CustomClassRepository {
                                 "id", "name")
                 );
             }
+            if (StringUtils.hasText(request.getId())){
+                predicates.add(criteriaBuilder.like(root.get("id"), "%" + request.getId() + "%"));
+            }
+            if (StringUtils.hasText(request.getName())){
+                predicates.add(criteriaBuilder.like(root.get("name"), "%" + request.getName() + "%"));
+            }
+            if (StringUtils.hasText(request.getHrTeacher())){
+                predicates.add(criteriaBuilder.like(root.get("hrTeacher"), "%" + request.getHrTeacher() + "%"));
+            }
+            if (StringUtils.hasText(request.getMonitor())){
+                predicates.add(criteriaBuilder.like(root.get("monitor"), "%" + request.getMonitor() + "%"));
+            }
             if (StringUtils.hasText(request.getFacultyId())){
-                predicates.add(criteriaBuilder.like(root.get("faculty").get("id"), request.getFacultyId()));
+                predicates.add(criteriaBuilder.like(root.get("faculty").get("id"), "%" + request.getFacultyId() + "%"));
             }
             query.orderBy(
                     criteriaBuilder.asc(root.get("id"))

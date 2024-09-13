@@ -1,11 +1,9 @@
 package vn.edu.vnua.department.authentication.service;
 
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,9 +13,6 @@ import vn.edu.vnua.department.response.UserLoginResponse;
 import vn.edu.vnua.department.security.JwtTokenProvider;
 import vn.edu.vnua.department.user.entity.User;
 import vn.edu.vnua.department.user.repository.UserRepository;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +27,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.AuthenticationConstant.CANNOT_LOGIN));
         if (!encoder.matches(password, user.getPassword())) {
             throw new RuntimeException(Constants.AuthenticationConstant.CANNOT_LOGIN);
+        }
+        if(user.getIsLock()){
+            throw new RuntimeException(Constants.AuthenticationConstant.ACCOUNT_LOCKED);
         }
 
         Authentication authentication = authenticationManager.authenticate(

@@ -42,6 +42,14 @@ public class UserController extends BaseController {
         return buildListItemResponse(response, response.size());
     }
 
+    @PostMapping("pick")
+    public ResponseEntity<?> getUsersPicked() {
+        List<UserDTO> response = userService.getUserPicked().stream().map(
+                user -> modelMapper.map(user, UserDTO.class)
+        ).toList();
+        return buildListItemResponse(response, response.size());
+    }
+
     @PostMapping("create")
 //    @PreAuthorize("hasAnyAuthority('PRINCIPAL', 'DEAN', 'MANAGER', 'DEPUTY')")
     public ResponseEntity<?> createUser(@Valid @RequestBody CreateUserRequest request) {
@@ -96,14 +104,19 @@ public class UserController extends BaseController {
         return buildItemResponse(response);
     }
 
+    @PostMapping("lock/{id}")
+    public ResponseEntity<?> lockAccount(@PathVariable String id){
+        UserDTO response = modelMapper.map(userService.lockAccount(id), UserDTO.class);
+        return buildItemResponse(response);
+    }
 
-    //Dưới đây là api chỉ dành cho postman, front-end dev vui lòng không sử dụng dưới mọi hình thức
+
+    //Dưới đây là api để khởi tạo superadmin bằng postman, front-end dev vui lòng không đưa vào giao diện dưới mọi hình thức
     @PostMapping("create-principal/{id}")
     public ResponseEntity<?> createPrincipal(@PathVariable String id) {
         UserDTO response = modelMapper.map(userService.createPrincipal(id), UserDTO.class);
         return buildItemResponse(response);
     }
-
     @PostMapping("dev-create")
     public ResponseEntity<?> devCreateUser(@Valid @RequestBody CreateUserRequest request) {
         UserDTO response = modelMapper.map(userService.devCreateUser(request), UserDTO.class);

@@ -34,4 +34,5 @@ public class TeachingDTO {
     private Timestamp modifiedAt;
     private UserBasicDTO modifiedBy;
     private String note;
+    private Boolean isLock;
 }

@@ -70,15 +70,29 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<User> getUserPicked() {
+        User dev = userRepository.findById(Constants.DevAccountConstant.DEV).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User me = userRepository.getUserById(authentication.getPrincipal().toString());
+
+        List<User> users = userRepository.findAllByDepartment(me.getDepartment());
+        users.remove(dev);
+
+        return users;
+    }
+
+    @Override
     public User createUser(CreateUserRequest request) {
         try {
+            if (userRepository.existsById(request.getId())) {
+                throw new RuntimeException(Constants.UserConstant.USER_EXISTED);
+            }
+
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 //            User user = userRepository.getUserById(authentication.getPrincipal().toString());
             User user = userRepository.getUserById(authentication.getPrincipal().toString());
 
-            if (userRepository.existsById(request.getId())) {
-                throw new RuntimeException(Constants.UserConstant.USER_ALREADY_EXIST);
-            }
             String roleId = request.getRole().getId();
             Role role = roleRepository.findById(roleId).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
             Department department = departmentRepository.findById(request.getDepartment().getId()).orElseThrow(() -> new RuntimeException(Constants.DepartmentConstant.DEPARTMENT_NOT_FOUND));
@@ -118,6 +132,7 @@ public class UserServiceImpl implements UserService {
                             .role(role)
                             .manage(manage)
                             .note(request.getNote())
+                            .isLock(false)
                             .build()
             );
         } catch (DataIntegrityViolationException e) {
@@ -128,17 +143,25 @@ public class UserServiceImpl implements UserService {
     @Override
     public User updateUser(String id, UpdateUserRequest request) {
         try {
+            //Lấy thông tin modifier
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             User manager = userRepository.getUserById(authentication.getPrincipal().toString());
+
+            //Lấy roleId của modifier
             String managerRoleId = manager.getRole().getId();
 
+            //Không thể sửa chính mình
             if (manager.getId().equals(id)) {
                 throw new RuntimeException(Constants.UserConstant.CANNOT_MANAGE_YOURSELF);
             }
 
+            //Lấy thông tin người bị sửa
             User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+
+            //Lấy roleId của người bị sửa
             String userRoleId = user.getRole().getId();
 
+            //Bắt lỗi nếu cấp dưới muốn update cấp trên
             if (managerRoleId.equals(Constants.RoleIdConstant.DEAN) &&
                     userRoleId.equals(Constants.RoleIdConstant.PRINCIPAL)) {
                 throw new RuntimeException(Constants.UserConstant.CANNOT_MANAGE_SUPERIOR);
@@ -153,10 +176,12 @@ public class UserServiceImpl implements UserService {
                 throw new RuntimeException(Constants.UserConstant.CANNOT_MANAGE_SUPERIOR);
             }
 
+            //Lấy role của người bị sửa
             String roleId = request.getRole().getId();
             Role role = roleRepository.findById(roleId).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
             MasterData degree = masterDataRepository.findById(request.getDegree().getId()).orElseThrow(() -> new RuntimeException(Constants.MasterDataConstant.DEGREE_NOT_FOUND));
 
+            //Kiểm tra nếu người bị sửa ở bộ môn khác hoặc khoa khác
             if (user.getRole().getId().equals(Constants.RoleIdConstant.MANAGER) ||
                     user.getRole().getId().equals(Constants.RoleIdConstant.DEPUTY)) {
                 if (manager.getDepartment() != user.getDepartment() &&
@@ -171,6 +196,7 @@ public class UserServiceImpl implements UserService {
                 }
             }
 
+            //Sửa
             user.setFirstName(request.getFirstName());
             user.setLastName(request.getLastName());
             user.setDegree(degree);
@@ -180,6 +206,7 @@ public class UserServiceImpl implements UserService {
             user.setRole(role);
             user.setNote(request.getNote());
 
+            //Set giá trị cho nơi quản lý (nếu có)
             switch (roleId) {
                 case Constants.RoleIdConstant.DEPUTY, Constants.RoleIdConstant.MANAGER -> user.setManage(user.getDepartment().getId());
                 case Constants.RoleIdConstant.DEAN -> user.setManage(user.getDepartment().getFaculty().getId());
@@ -228,6 +255,11 @@ public class UserServiceImpl implements UserService {
 
         User receiver = userRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
         Role lecturer = roleRepository.findById(Constants.RoleIdConstant.LECTURER).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
+
+        if(receiver.getDepartment()!=giver.getDepartment()){
+            throw new RuntimeException(Constants.UserConstant.USER_IN_OTHER_DEPARTMENTS);
+        }
+
         if (!receiver.getRole().getId().equals(Constants.RoleIdConstant.LECTURER)) {
             throw new RuntimeException(Constants.UserConstant.USER_ARE_NOT_LECTURER);
         }
@@ -289,6 +321,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User lockAccount(String id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+
+        if(!user.getIsLock()){
+            user.setIsLock(true);
+        } else if (user.getIsLock()){
+            user.setIsLock(false);
+        }
+
+        return userRepository.saveAndFlush(user);
+    }
+
+    @Override
     public User createPrincipal(String id) {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
         Role role = roleRepository.findById(Constants.RoleIdConstant.PRINCIPAL).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
@@ -301,7 +346,7 @@ public class UserServiceImpl implements UserService {
     public User devCreateUser(CreateUserRequest request) {
         try {
             if (userRepository.existsById(request.getId())) {
-                throw new RuntimeException(Constants.UserConstant.USER_ALREADY_EXIST);
+                throw new RuntimeException(Constants.UserConstant.USER_EXISTED);
             }
             Role role = roleRepository.findById(Constants.RoleIdConstant.LECTURER).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
             Department department = departmentRepository.findById(request.getDepartment().getId()).orElseThrow(() -> new RuntimeException(Constants.DepartmentConstant.DEPARTMENT_NOT_FOUND));

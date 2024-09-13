@@ -58,6 +58,7 @@ public class StoreTeachingWorker implements Callable<TeachingExcelData> {
                     .status(Constants.StatusConstant.INCOMPLETE)
                     .createdAt(Timestamp.valueOf(LocalDateTime.now()))
                     .createdBy(createdBy)
+                    .isLock(false)
                     .build();
 
             List<TeachingExcelData.ErrorDetail> errorDetailList = teaching.validateInformationDetailError(new CopyOnWriteArrayList<>());

@@ -22,4 +22,5 @@ public class UserDTO {
     private RoleDTO role;
     private String manage;
     private String avatar;
+    private Boolean isLock;
 }

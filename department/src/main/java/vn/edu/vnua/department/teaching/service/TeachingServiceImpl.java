@@ -14,6 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import vn.edu.vnua.department.common.Constants;
+import vn.edu.vnua.department.intern.entity.Intern;
+import vn.edu.vnua.department.intern.repository.CustomInternRepository;
+import vn.edu.vnua.department.intern.request.LockInternListRequest;
 import vn.edu.vnua.department.masterdata.entity.MasterData;
 import vn.edu.vnua.department.masterdata.repository.MasterDataRepository;
 import vn.edu.vnua.department.service.excel.ExcelService;
@@ -22,10 +25,7 @@ import vn.edu.vnua.department.subject.repository.SubjectRepository;
 import vn.edu.vnua.department.teaching.entity.Teaching;
 import vn.edu.vnua.department.teaching.repository.CustomTeachingRepository;
 import vn.edu.vnua.department.teaching.repository.TeachingRepository;
-import vn.edu.vnua.department.teaching.request.CreateTeachingRequest;
-import vn.edu.vnua.department.teaching.request.ExportTeachingRequest;
-import vn.edu.vnua.department.teaching.request.GetTeachingListRequest;
-import vn.edu.vnua.department.teaching.request.UpdateTeachingRequest;
+import vn.edu.vnua.department.teaching.request.*;
 import vn.edu.vnua.department.user.entity.User;
 import vn.edu.vnua.department.user.repository.UserRepository;
 import vn.edu.vnua.department.util.MyUtils;
@@ -49,28 +49,28 @@ public class TeachingServiceImpl implements TeachingService {
 
     @Override
     public Page<Teaching> getTeachingList(GetTeachingListRequest request) {
-        if(!request.getIsAll()) {
+        if (!request.getIsAll()) {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             User teacher = userRepository.getUserById(authentication.getPrincipal().toString());
 
-            Timestamp currentDate = Timestamp.valueOf(LocalDateTime.now());
-            int month = currentDate.getMonth() + 1;
-            int year = currentDate.getYear() + 1900;
-            int term;
-            if(month<=5) {
-                term = 2;
-            } else if(month<=8) {
-                term = 3;
-            } else {
-                term = 1;
-            }
-            String schoolYearName = month >= 9 ? (year+"-"+(year+1)) : ((year-1)+"-"+year);
-
-            MasterData schoolYear = masterDataRepository.findByName(schoolYearName);
+//            Timestamp currentDate = Timestamp.valueOf(LocalDateTime.now());
+//            int month = currentDate.getMonth() + 1;
+//            int year = currentDate.getYear() + 1900;
+//            int term;
+//            if(month<=5) {
+//                term = 2;
+//            } else if(month<=8) {
+//                term = 3;
+//            } else {
+//                term = 1;
+//            }
+//            String schoolYearName = month >= 9 ? (year+"-"+(year+1)) : ((year-1)+"-"+year);
+//
+//            MasterData schoolYear = masterDataRepository.findByName(schoolYearName);
 
             request.setTeacherId(teacher.getId());
-            request.setTerm((byte) term);
-            request.setSchoolYear(schoolYear.getId());
+//            request.setTerm((byte) term);
+//            request.setSchoolYear(schoolYear.getId());
         }
         Specification<Teaching> specification = CustomTeachingRepository.filterTeachingList(request);
         return teachingRepository.findAll(specification, PageRequest.of(request.getPage() - 1, request.getSize()));
@@ -112,6 +112,7 @@ public class TeachingServiceImpl implements TeachingService {
                 .status(status)
                 .createdAt(Timestamp.valueOf(LocalDateTime.now()))
                 .createdBy(createdBy)
+                .isLock(false)
                 .build());
     }
 
@@ -162,6 +163,40 @@ public class TeachingServiceImpl implements TeachingService {
     }
 
     @Override
+    public Teaching lockTeaching(Long id) {
+        Teaching teaching = teachingRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.TeachingConstant.TEACHING_NOT_FOUND));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepository.getUserById(authentication.getPrincipal().toString());
+
+        if (user.getRole().getId().equals(Constants.RoleIdConstant.LECTURER)) {
+            throw new RuntimeException(Constants.InternConstant.CANNOT_LOCK);
+        }
+
+        if(!teaching.getIsLock()){
+            teaching.setIsLock(true);
+        } else if (teaching.getIsLock()){
+            teaching.setIsLock(false);
+        }
+
+        return teachingRepository.saveAndFlush(teaching);
+    }
+
+    @Override
+    public List<Teaching> lockTeachingList(LockTeachingListRequest request) {
+        Specification<Teaching> specification = CustomTeachingRepository.filterLockTeachingList(request);
+        List<Teaching> teachingList = teachingRepository.findAll(specification);
+
+        Boolean isLock = request.getWantLock();
+
+        for (Teaching teaching:
+                teachingList) {
+            teaching.setIsLock(isLock);
+        }
+
+        return teachingRepository.saveAllAndFlush(teachingList);
+    }
+
+    @Override
     public List<Teaching> importFromExcel(MultipartFile file) throws IOException, ExecutionException, InterruptedException {
         return teachingRepository.saveAll(excelService.readTeachingFromExcel(file));
     }
@@ -175,7 +210,8 @@ public class TeachingServiceImpl implements TeachingService {
 
     @Override
     public List<Teaching> readFromDaoTao(String teacherId) throws IOException {
-        if(!userRepository.existsById(teacherId)) {
+        //Tìm người dùng
+        if (!userRepository.existsById(teacherId)) {
             throw new RuntimeException(Constants.UserConstant.USER_NOT_FOUND);
         }
 
@@ -183,6 +219,7 @@ public class TeachingServiceImpl implements TeachingService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User createdBy = userRepository.getUserById(authentication.getPrincipal().toString());
 
+        //Chỉ có thể đọc dữ liệu của chính mình
         if (createdBy.getRole().getId().equals(Constants.RoleIdConstant.LECTURER)) {
             if (createdBy != teacher) {
                 throw new RuntimeException(Constants.TeachingConstant.CANNOT_UPDATE);
@@ -192,23 +229,49 @@ public class TeachingServiceImpl implements TeachingService {
         String teacherFirsName = teacher.getFirstName();
         String teacherLastName = teacher.getLastName();
 
+        //Lấy dữ liệu từ đường dẫn
         String link = "https://daotao.vnua.edu.vn/default.aspx?page=thoikhoabieu&sta=1&id=" + teacherId;
         Document document = Jsoup.connect(link).timeout(20000).get();
 
-        String time = document.select("option[selected=selected][value=20233]").first().ownText();
-        Byte term = MyUtils.parseByteFromString(time.split(" ")[2]);
-        String schoolYearName = time.split(" ")[6];
+        //Lấy mã học kỳ
+        Timestamp currentDate = Timestamp.valueOf(LocalDateTime.now());
+        int month = currentDate.getMonth() + 1;
+        int year = currentDate.getYear() + 1900;
+        byte term;
+        String termId;
+        String schoolYearName;
+        if (month <= 5) {
+            term = 2;
+            termId = (year - 1) + term + "";
+            schoolYearName = (year-1) + "-" + year;
+        } else if (month <= 8) {
+            term = 3;
+            termId = (year - 1) + term + "";
+            schoolYearName = (year-1) + "-" + year;
+        } else {
+            term = 1;
+            termId = year + term + "";
+            schoolYearName = (year) + "-" + (year+1);
+        }
+        String time = "Học kỳ " + term + " - Năm học " + schoolYearName;
+
+        //Lấy dữ liệu học kỳ hiện tại
+//        if(document.select("option[selected=selected][value=" + termId + "]").first()==null){
+//            throw new RuntimeException(String.format(Constants.TeachingConstant.DAOTAO_NOT_FOUND, teacherId, teacherFirsName,teacherLastName, time));
+//        }
+//        String time = document.select("option[selected=selected][value=" + termId + "]").first().ownText();
         MasterData schoolYear = masterDataRepository.getByName(schoolYearName).orElseThrow(() -> new RuntimeException(Constants.MasterDataConstant.SCHOOL_YEAR_NOT_FOUND));
 
         List<Teaching> teachingList = new ArrayList<>();
         Element table = document.select("table[width=100%][class=body-table][cellspacing=0][cellpadding=0]").first();
         if (table == null) {
-            throw new RuntimeException("Chưa có thông tin giảng dạy của người dùng " + teacherId + " - " + teacherFirsName + " " + teacherLastName + " trong " + time);
+            throw new RuntimeException("Không có thông tin giảng dạy của người dùng " + teacherId + " - " + teacherFirsName + " " + teacherLastName + " trong " + time);
         } else {
             int rowNum = document.select("td[width=56px][align=center]").size();
+//            int rowNum = document.select("table[class=body-table]").size();
             for (int i = 0; i < rowNum; i++) {
                 String subjectId = document.select("td[width=56px][align=center]").get(i).ownText();
-                Integer teachingGroup = MyUtils.parseIntegerFromString(document.select("td[width=35px][align=center]").get(i).ownText());
+                Integer teachingGroup = MyUtils.parseIntegerFromString(document.select("td[width=35px][align=center]").get(i*5).ownText());
                 String classId = document.select("td[width=70px][align=center]").get(i).ownText();
 
                 if (teachingRepository.existsBySchoolYearIdAndTermAndSubjectIdAndClassIdAndTeachingGroup(schoolYear.getId(),

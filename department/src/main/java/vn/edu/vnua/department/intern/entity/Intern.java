@@ -62,6 +62,9 @@ public class Intern {
     @Column
     private String note;
 
+    @Column(name = "is_lock")
+    private Boolean isLock;
+
     @OneToMany(mappedBy = "intern")
     private Collection<Student> students;
 

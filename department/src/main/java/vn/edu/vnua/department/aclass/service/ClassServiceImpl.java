@@ -42,6 +42,10 @@ public class ClassServiceImpl implements ClassService{
 
     @Override
     public AClass createClass(CreateClassRequest request) {
+        if(classRepository.existsById(request.getId())){
+            throw new RuntimeException(Constants.ClassConstant.CLASS_EXISTED);
+        }
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User createdBy = userRepository.getUserById(authentication.getPrincipal().toString());
 

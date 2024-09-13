@@ -48,6 +48,10 @@ public class SubjectServiceImpl implements SubjectService {
 
     @Override
     public Subject createSubject(CreateSubjectRequest request) {
+        if(subjectRepository.existsById(request.getId())){
+            throw new RuntimeException(Constants.SubjectConstant.SUBJECT_EXISTED);
+        }
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User createdBy = userRepository.getUserById(authentication.getPrincipal().toString());
 

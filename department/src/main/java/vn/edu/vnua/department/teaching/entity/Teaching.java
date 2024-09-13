@@ -72,6 +72,9 @@ public class Teaching {
     @Column
     private String note;
 
+    @Column(name = "is_lock")
+    private Boolean isLock;
+
     public List<TeachingExcelData.ErrorDetail> validateInformationDetailError(List<TeachingExcelData.ErrorDetail> errorDetailList){
         if (!ImportTeachingValidator.validateNaturalNum(term)) {
             errorDetailList.add(TeachingExcelData.ErrorDetail.builder().columnIndex(1).errorMsg("Học kỳ không hợp lệ").build());

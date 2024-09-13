@@ -9,6 +9,7 @@ import vn.edu.vnua.department.exam.entity.Exam;
 import vn.edu.vnua.department.intern.entity.Intern;
 import vn.edu.vnua.department.teaching.entity.Teaching;
 import vn.edu.vnua.department.user.entity.User;
+import vn.edu.vnua.department.userjointask.entity.UserTask;
 
 import java.util.Collection;
 
@@ -46,4 +47,7 @@ public class MasterData {
 
     @OneToMany(mappedBy = "degree")
     private Collection<User> userDegrees;
+
+    @OneToMany(mappedBy = "taskStatus")
+    private Collection<UserTask> taskStatus;
 }

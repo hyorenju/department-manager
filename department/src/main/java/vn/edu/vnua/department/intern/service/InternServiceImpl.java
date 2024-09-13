@@ -11,14 +11,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import vn.edu.vnua.department.common.Constants;
-import vn.edu.vnua.department.department.entity.Department;
 import vn.edu.vnua.department.intern.entity.Intern;
 import vn.edu.vnua.department.intern.repository.CustomInternRepository;
 import vn.edu.vnua.department.intern.repository.InternRepository;
-import vn.edu.vnua.department.intern.request.CreateInternRequest;
-import vn.edu.vnua.department.intern.request.ExportInternListRequest;
-import vn.edu.vnua.department.intern.request.GetInternListRequest;
-import vn.edu.vnua.department.intern.request.UpdateInternRequest;
+import vn.edu.vnua.department.intern.request.*;
 import vn.edu.vnua.department.masterdata.entity.MasterData;
 import vn.edu.vnua.department.masterdata.repository.MasterDataRepository;
 import vn.edu.vnua.department.service.excel.ExcelService;
@@ -26,10 +22,6 @@ import vn.edu.vnua.department.user.entity.User;
 import vn.edu.vnua.department.user.repository.UserRepository;
 
 import java.io.IOException;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -47,17 +39,17 @@ public class InternServiceImpl implements InternService {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             User instructor = userRepository.getUserById(authentication.getPrincipal().toString());
 
-            Timestamp currentDate = Timestamp.valueOf(LocalDateTime.now());
-            int month = currentDate.getMonth() + 1;
-            int year = currentDate.getYear() + 1900;
-            int term = month > 6 ? 1 : 2;
-            String schoolYearName = month > 6 ? (year+"-"+(year+1)) : ((year-1)+"-"+year);
-
-            MasterData schoolYear = masterDataRepository.findByName(schoolYearName);
+//            Timestamp currentDate = Timestamp.valueOf(LocalDateTime.now());
+//            int month = currentDate.getMonth() + 1;
+//            int year = currentDate.getYear() + 1900;
+//            int term = month > 6 ? 1 : 2;
+//            String schoolYearName = month > 6 ? (year+"-"+(year+1)) : ((year-1)+"-"+year);
+//
+//            MasterData schoolYear = masterDataRepository.findByName(schoolYearName);
 
             request.setInstructorId(instructor.getId());
-            request.setTerm((byte) term);
-            request.setSchoolYear(schoolYear.getId());
+//            request.setTerm((byte) term);
+//            request.setSchoolYear(schoolYear.getId());
         }
         Specification<Intern> specification = CustomInternRepository.filterInternList(request);
         return internRepository.findAll(specification, PageRequest.of(request.getPage() - 1, request.getSize()));
@@ -83,6 +75,7 @@ public class InternServiceImpl implements InternService {
                     .finalFile(request.getFinalFile())
                     .status(StringUtils.hasText(request.getFinalFile()) ? Constants.StatusConstant.COMPLETED : Constants.StatusConstant.INCOMPLETE)
                     .note(request.getNote())
+                    .isLock(false)
                     .build());
         } catch (DataIntegrityViolationException e) {
             throw new RuntimeException(Constants.InternConstant.NAME_IS_EXISTED);
@@ -97,7 +90,7 @@ public class InternServiceImpl implements InternService {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             User user = userRepository.getUserById(authentication.getPrincipal().toString());
 
-            if (user != intern.getInstructor()) {
+            if (user != intern.getInstructor() && user.getRole().getId().equals(Constants.RoleIdConstant.LECTURER)) {
                 throw new RuntimeException(Constants.InternConstant.CANNOT_UPDATE);
             }
 
@@ -138,12 +131,46 @@ public class InternServiceImpl implements InternService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = userRepository.getUserById(authentication.getPrincipal().toString());
 
-        if (user != intern.getInstructor()) {
+        if (user != intern.getInstructor() && user.getRole().getId().equals(Constants.RoleIdConstant.LECTURER)) {
             throw new RuntimeException(Constants.InternConstant.CANNOT_UPDATE);
         }
 
         internRepository.delete(intern);
         return intern;
+    }
+
+    @Override
+    public Intern lockIntern(Long id) {
+        Intern intern = internRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.InternConstant.INTERN_NOT_FOUND));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepository.getUserById(authentication.getPrincipal().toString());
+
+        if (user.getRole().getId().equals(Constants.RoleIdConstant.LECTURER)) {
+            throw new RuntimeException(Constants.InternConstant.CANNOT_LOCK);
+        }
+
+        if(!intern.getIsLock()){
+            intern.setIsLock(true);
+        } else if (intern.getIsLock()){
+            intern.setIsLock(false);
+        }
+
+        return internRepository.saveAndFlush(intern);
+    }
+
+    @Override
+    public List<Intern> lockInternList(LockInternListRequest request) {
+        Specification<Intern> specification = CustomInternRepository.filterLockInternList(request);
+        List<Intern> internList = internRepository.findAll(specification);
+
+        Boolean isLock = request.getWantLock();
+
+        for (Intern intern:
+             internList) {
+            intern.setIsLock(isLock);
+        }
+
+        return internRepository.saveAllAndFlush(internList);
     }
 
     @Override
@@ -157,17 +184,17 @@ public class InternServiceImpl implements InternService {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             User instructor = userRepository.getUserById(authentication.getPrincipal().toString());
 
-            Timestamp currentDate = Timestamp.valueOf(LocalDateTime.now());
-            int month = currentDate.getMonth() + 1;
-            int year = currentDate.getYear() + 1900;
-            int term = month > 6 ? 1 : 2;
-            String schoolYearName = month > 6 ? (year+"-"+(year+1)) : ((year-1)+"-"+year);
-
-            MasterData schoolYear = masterDataRepository.findByName(schoolYearName);
+//            Timestamp currentDate = Timestamp.valueOf(LocalDateTime.now());
+//            int month = currentDate.getMonth() + 1;
+//            int year = currentDate.getYear() + 1900;
+//            int term = month > 6 ? 1 : 2;
+//            String schoolYearName = month > 6 ? (year+"-"+(year+1)) : ((year-1)+"-"+year);
+//
+//            MasterData schoolYear = masterDataRepository.findByName(schoolYearName);
 
             request.setInstructorId(instructor.getId());
-            request.setTerm((byte) term);
-            request.setSchoolYear(schoolYear.getId());
+//            request.setTerm((byte) term);
+//            request.setSchoolYear(schoolYear.getId());
         }
         Specification<Intern> specification = CustomInternRepository.filterExportIntern(request);
         List<Intern> interns = internRepository.findAll(specification);

@@ -4,10 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 import vn.edu.vnua.department.exam.entity.Exam;
 import vn.edu.vnua.department.intern.entity.Intern;
-import vn.edu.vnua.department.intern.request.CreateInternRequest;
-import vn.edu.vnua.department.intern.request.ExportInternListRequest;
-import vn.edu.vnua.department.intern.request.GetInternListRequest;
-import vn.edu.vnua.department.intern.request.UpdateInternRequest;
+import vn.edu.vnua.department.intern.request.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -18,6 +15,8 @@ public interface InternService {
     Intern createIntern(CreateInternRequest request);
     Intern updateIntern(Long id, UpdateInternRequest request);
     Intern deleteIntern(Long id);
+    Intern lockIntern(Long id);
+    List<Intern> lockInternList(LockInternListRequest request);
     List<Intern> importFromExcel(MultipartFile file) throws IOException, ExecutionException, InterruptedException;
     String exportToExcel(ExportInternListRequest request);
 }

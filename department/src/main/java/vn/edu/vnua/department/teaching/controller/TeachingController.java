@@ -12,10 +12,7 @@ import vn.edu.vnua.department.controller.BaseController;
 import vn.edu.vnua.department.intern.request.ExportInternListRequest;
 import vn.edu.vnua.department.teaching.entity.Teaching;
 import vn.edu.vnua.department.teaching.entity.TeachingDTO;
-import vn.edu.vnua.department.teaching.request.CreateTeachingRequest;
-import vn.edu.vnua.department.teaching.request.ExportTeachingRequest;
-import vn.edu.vnua.department.teaching.request.GetTeachingListRequest;
-import vn.edu.vnua.department.teaching.request.UpdateTeachingRequest;
+import vn.edu.vnua.department.teaching.request.*;
 import vn.edu.vnua.department.teaching.service.TeachingService;
 
 import java.io.IOException;
@@ -54,6 +51,20 @@ public class TeachingController extends BaseController {
     private ResponseEntity<?> updateTeaching(@PathVariable Long id){
         TeachingDTO response = modelMapper.map(teachingService.deleteTeaching(id), TeachingDTO.class);
         return buildItemResponse(response);
+    }
+
+    @PostMapping("lock/{id}")
+    private ResponseEntity<?> lockTeaching(@PathVariable Long id){
+        TeachingDTO response = modelMapper.map(teachingService.lockTeaching(id), TeachingDTO.class);
+        return buildItemResponse(response);
+    }
+
+    @PostMapping("lock")
+    private ResponseEntity<?> lockTeachingList(@RequestBody LockTeachingListRequest request){
+        List<TeachingDTO> response = teachingService.lockTeachingList(request).stream().map(
+                teaching -> modelMapper.map(teaching, TeachingDTO.class)
+        ).toList();
+        return buildListItemResponse(response, response.size());
     }
 
     @PostMapping("import")

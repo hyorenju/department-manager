@@ -4,9 +4,12 @@ import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
+import vn.edu.vnua.department.intern.entity.Intern;
+import vn.edu.vnua.department.intern.request.LockInternListRequest;
 import vn.edu.vnua.department.teaching.entity.Teaching;
 import vn.edu.vnua.department.teaching.request.ExportTeachingRequest;
 import vn.edu.vnua.department.teaching.request.GetTeachingListRequest;
+import vn.edu.vnua.department.teaching.request.LockTeachingListRequest;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -91,6 +94,24 @@ public class CustomTeachingRepository {
                     criteriaBuilder.asc(root.get("teacher").get("lastName")),
                     criteriaBuilder.asc(root.get("status"))
             );
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        });
+    }
+
+    public static Specification<Teaching> filterLockTeachingList(LockTeachingListRequest request) {
+        return ((root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            if (request.getWantLock()){
+                predicates.add(criteriaBuilder.isFalse(root.get("isLock")));
+            } else if(!request.getWantLock()){
+                predicates.add(criteriaBuilder.isTrue(root.get("isLock")));
+            }
+            if(request.getSchoolYearId()!=null){
+                predicates.add(criteriaBuilder.equal(root.get("schoolYear").get("id"), request.getSchoolYearId()));
+            }
+            if(request.getTerm()!=null){
+                predicates.add(criteriaBuilder.equal(root.get("term"), request.getTerm()));
+            }
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         });
     }

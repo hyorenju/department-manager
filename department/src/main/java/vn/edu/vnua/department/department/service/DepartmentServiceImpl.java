@@ -50,7 +50,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     public Department createDepartment(CreateDepartmentRequest request) {
         if (departmentRepository.existsById(request.getId())) {
-            throw new RuntimeException(Constants.DepartmentConstant.DEPARTMENT_ALREADY_EXIST);
+            throw new RuntimeException(Constants.DepartmentConstant.DEPARTMENT_EXISTED);
         }
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

@@ -11,10 +11,7 @@ import vn.edu.vnua.department.controller.BaseController;
 import vn.edu.vnua.department.exam.entity.ExamDTO;
 import vn.edu.vnua.department.intern.entity.Intern;
 import vn.edu.vnua.department.intern.entity.InternDTO;
-import vn.edu.vnua.department.intern.request.CreateInternRequest;
-import vn.edu.vnua.department.intern.request.ExportInternListRequest;
-import vn.edu.vnua.department.intern.request.GetInternListRequest;
-import vn.edu.vnua.department.intern.request.UpdateInternRequest;
+import vn.edu.vnua.department.intern.request.*;
 import vn.edu.vnua.department.intern.service.InternService;
 
 import java.io.IOException;
@@ -53,6 +50,19 @@ public class InternController extends BaseController {
     public ResponseEntity<?> deleteIntern(@PathVariable Long id) {
         InternDTO response = modelMapper.map(internService.deleteIntern(id), InternDTO.class);
         return buildItemResponse(response);
+    }
+
+    @PostMapping("lock/{id}")
+    public ResponseEntity<?> lockIntern(@PathVariable Long id) {
+        InternDTO response = modelMapper.map(internService.lockIntern(id), InternDTO.class);
+        return buildItemResponse(response);
+    }
+
+    @PostMapping("lock")
+    public ResponseEntity<?> lockInternList(@RequestBody LockInternListRequest request) {
+        List<InternDTO> response = internService.lockInternList(request).stream().map(
+                intern -> modelMapper.map(intern, InternDTO.class)).toList();
+        return buildListItemResponse(response, response.size());
     }
 
     @PostMapping("import")

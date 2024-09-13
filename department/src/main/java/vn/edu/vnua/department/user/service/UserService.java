@@ -12,6 +12,7 @@ import java.util.List;
 public interface UserService {
     Page<User> getUserList(GetUserListRequest request);
     List<User> getUserSelection(GetUserSelectionRequest request);
+    List<User> getUserPicked();
     User createUser(CreateUserRequest request);
     User updateUser(String id, UpdateUserRequest request);
     User updateProfile(UpdateProfileRequest request);
@@ -20,6 +21,7 @@ public interface UserService {
     User deleteUser(String id);
     String exportToExcel(ExportUserListRequest request);
     User changePassword(ChangePasswordRequest request);
+    User lockAccount(String id);
 
     // For dev
     User createPrincipal(String id);

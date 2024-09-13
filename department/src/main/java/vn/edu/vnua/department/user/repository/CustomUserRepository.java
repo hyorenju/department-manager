@@ -48,7 +48,7 @@ public class CustomUserRepository {
             query.orderBy(
                     criteriaBuilder.desc(root.get("createdAt"))
             );
-            predicates.add(criteriaBuilder.notLike(root.get("id"), Constants.DevAccountConstant.DEV));
+//            predicates.add(criteriaBuilder.notLike(root.get("id"), Constants.DevAccountConstant.DEV));
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         });
     }
@@ -90,7 +90,7 @@ public class CustomUserRepository {
                     criteriaBuilder.asc(root.get("department").get("faculty").get("name")),
                     criteriaBuilder.asc(root.get("department").get("name"))
             );
-            predicates.add(criteriaBuilder.notLike(root.get("id"), Constants.DevAccountConstant.DEV));
+//            predicates.add(criteriaBuilder.notLike(root.get("id"), Constants.DevAccountConstant.DEV));
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         });
     }

@@ -13,9 +13,11 @@ import vn.edu.vnua.department.exam.entity.Exam;
 import vn.edu.vnua.department.faculty.entity.Faculty;
 import vn.edu.vnua.department.intern.entity.Intern;
 import vn.edu.vnua.department.masterdata.entity.MasterData;
+import vn.edu.vnua.department.project.entity.Project;
 import vn.edu.vnua.department.role.entity.Role;
 import vn.edu.vnua.department.subject.entity.Subject;
 import vn.edu.vnua.department.teaching.entity.Teaching;
+import vn.edu.vnua.department.userjointask.entity.UserTask;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -71,6 +73,9 @@ public class User {
 
     @Column(name = "avatar", length = 2000)
     private String avatar;
+
+    @Column(name = "is_lock", length = 2000)
+    private Boolean isLock = false;
 
 
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -157,4 +162,10 @@ public class User {
 
     @OneToMany(mappedBy = "modifiedBy")
     private Collection<Subject> modifiedSubjects;
+
+    @OneToMany(mappedBy = "createdBy")
+    private Collection<Project> createdProjects;
+
+    @OneToMany(mappedBy = "user")
+    private Collection<UserTask> tasksJoined;
 }

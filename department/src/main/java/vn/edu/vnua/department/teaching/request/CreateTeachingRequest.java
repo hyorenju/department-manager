@@ -25,7 +25,7 @@ public class CreateTeachingRequest {
     @NotBlank(message = "Vui lòng điền các mã lớp")
     private String classId;
 
-    @NotBlank(message = "Nhóm không được để trống")
+    @NotNull(message = "Nhóm không được để trống")
     private Integer teachingGroup;
 
     private CreateMasterDataRequest schoolYear;
