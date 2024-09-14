@@ -42,7 +42,7 @@ public class ExamServiceImpl implements ExamService {
 
     @Override
     public Page<Exam> getExamList(GetExamListRequest request) {
-        if(!request.getIsAll()) {
+        if (!request.getIsAll()) {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             User proctor = userRepository.getUserById(authentication.getPrincipal().toString());
 
@@ -64,7 +64,7 @@ public class ExamServiceImpl implements ExamService {
 
     @Override
     public Exam createExam(CreateExamRequest request) throws ParseException {
-        if(examRepository.existsBySubjectIdAndClassIdAndExamGroupAndSchoolYearIdAndTermAndCluster(
+        if (examRepository.existsBySubjectIdAndClassIdAndExamGroupAndSchoolYearIdAndTermAndCluster(
                 request.getSubject().getId(), request.getClassId(), request.getExamGroup(), request.getSchoolYear().getId(), request.getTerm(), request.getCluster()
         )) {
             throw new RuntimeException(Constants.ExamConstant.EXAM_IS_EXISTED);
@@ -75,6 +75,19 @@ public class ExamServiceImpl implements ExamService {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User createdBy = userRepository.getUserById(authentication.getPrincipal().toString());
+
+        MasterData form = request.getForm() != null ? masterDataRepository.findById(request.getForm().getId()).orElseThrow(() -> new RuntimeException(Constants.MasterDataConstant.EXAM_FORM_NOT_FOUND)) : null;
+        User proctor1 = request.getProctor1() != null ? userRepository.findById(request.getProctor1().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND)) : null;
+        User proctor2 = request.getProctor2() != null ? userRepository.findById(request.getProctor2().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND)) : null;
+        User lecturerTeach = request.getLecturerTeach() != null ? userRepository.findById(request.getLecturerTeach().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND)) : null;
+        User marker1 = request.getMarker1() != null ? userRepository.findById(request.getMarker1().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND)) : null;
+        User marker2 = request.getMarker2() != null ? userRepository.findById(request.getMarker2().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND)) : null;
+        User picker = request.getPicker() != null ? userRepository.findById(request.getPicker().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND)) : null;
+        User printer = request.getPicker() != null ? userRepository.findById(request.getPicker().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND)) : null;
+        User questionTaker = request.getPicker() != null ? userRepository.findById(request.getPicker().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND)) : null;
+        User examTaker = request.getPicker() != null ? userRepository.findById(request.getPicker().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND)) : null;
+        User examGiver = request.getPicker() != null ? userRepository.findById(request.getPicker().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND)) : null;
+        User pointGiver = request.getPicker() != null ? userRepository.findById(request.getPicker().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND)) : null;
 
         return examRepository.saveAndFlush(Exam.builder()
                 .subject(subject)
@@ -88,6 +101,21 @@ public class ExamServiceImpl implements ExamService {
                 .examGroup(request.getExamGroup())
                 .quantity(request.getQuantity())
                 .cluster(request.getCluster())
+                .examCode(request.getExamCode())
+
+                .form(form)
+                .lecturerTeach(lecturerTeach)
+                .proctor1(proctor1)
+                .proctor2(proctor2)
+                .marker1(marker1)
+                .marker2(marker2)
+                .picker(picker)
+                .printer(printer)
+                .questionTaker(questionTaker)
+                .examTaker(examTaker)
+                .examGiver(examGiver)
+                .pointGiver(pointGiver)
+
                 .note(request.getNote())
 
                 .createdAt(Timestamp.valueOf(LocalDateTime.now()))
@@ -99,23 +127,22 @@ public class ExamServiceImpl implements ExamService {
     @Override
     public Exam updateExam(Long id, UpdateExamRequest request) {
         Exam exam = examRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.ExamConstant.EXAM_NOT_FOUND));
-        if(request.getProctor1().getId().equals(request.getProctor2().getId())){
+        if (request.getProctor1().getId().equals(request.getProctor2().getId())) {
             throw new RuntimeException(Constants.ExamConstant.PROCTORS_NOT_BE_SAME);
         }
 
-        User lecturerTeach = userRepository.findById(request.getLecturerTeach().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
-        User proctor1 = userRepository.findById(request.getProctor1().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
-        User proctor2 = userRepository.findById(request.getProctor2().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
-        User marker1 = userRepository.findById(request.getMarker1().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
-        User marker2 = userRepository.findById(request.getMarker2().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
-        User picker = userRepository.findById(request.getPicker().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
-        User printer = userRepository.findById(request.getPicker().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
-        User questionTaker = userRepository.findById(request.getPicker().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
-        User examTaker = userRepository.findById(request.getPicker().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
-        User examGiver = userRepository.findById(request.getPicker().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
-        User pointGiver = userRepository.findById(request.getPicker().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
-
-        MasterData form = masterDataRepository.findById(request.getForm().getId()).orElseThrow(() -> new RuntimeException(Constants.MasterDataConstant.EXAM_FORM_NOT_FOUND));
+        MasterData form = request.getForm() != null ? masterDataRepository.findById(request.getForm().getId()).orElseThrow(() -> new RuntimeException(Constants.MasterDataConstant.EXAM_FORM_NOT_FOUND)) : null;
+        User proctor1 = request.getProctor1() != null ? userRepository.findById(request.getProctor1().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND)) : null;
+        User proctor2 = request.getProctor2() != null ? userRepository.findById(request.getProctor2().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND)) : null;
+        User lecturerTeach = request.getLecturerTeach() != null ? userRepository.findById(request.getLecturerTeach().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND)) : null;
+        User marker1 = request.getMarker1() != null ? userRepository.findById(request.getMarker1().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND)) : null;
+        User marker2 = request.getMarker2() != null ? userRepository.findById(request.getMarker2().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND)) : null;
+        User picker = request.getPicker() != null ? userRepository.findById(request.getPicker().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND)) : null;
+        User printer = request.getPicker() != null ? userRepository.findById(request.getPicker().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND)) : null;
+        User questionTaker = request.getPicker() != null ? userRepository.findById(request.getPicker().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND)) : null;
+        User examTaker = request.getPicker() != null ? userRepository.findById(request.getPicker().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND)) : null;
+        User examGiver = request.getPicker() != null ? userRepository.findById(request.getPicker().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND)) : null;
+        User pointGiver = request.getPicker() != null ? userRepository.findById(request.getPicker().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND)) : null;
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User modifiedBy = userRepository.getUserById(authentication.getPrincipal().toString());
@@ -191,7 +218,7 @@ public class ExamServiceImpl implements ExamService {
 
     @Override
     public String exportToExcel(ExportExamRequest request) {
-        if(!request.getIsAll()) {
+        if (!request.getIsAll()) {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             User proctor = userRepository.getUserById(authentication.getPrincipal().toString());
 
@@ -215,7 +242,7 @@ public class ExamServiceImpl implements ExamService {
     @Override
     public Exam updateProctor(Long id, UpdateProctorExamRequest request) {
         Exam exam = examRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.ExamConstant.EXAM_NOT_FOUND));
-        if(request.getProctor1().getId().equals(request.getProctor2().getId())){
+        if (request.getProctor1().getId().equals(request.getProctor2().getId())) {
             throw new RuntimeException(Constants.ExamConstant.PROCTORS_NOT_BE_SAME);
         }
 

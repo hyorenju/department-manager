@@ -43,5 +43,31 @@ public class CreateExamRequest {
     @NotNull(message = "Tổ thi không được để trống")
     private Integer cluster;
 
+    private CreateMasterDataRequest form;
+
+    private Integer examCode;
+
+    private CreateUserRequest lecturerTeach;
+
+    private CreateUserRequest proctor1;
+
+    private CreateUserRequest proctor2;
+
+    private CreateUserRequest marker1;
+
+    private CreateUserRequest marker2;
+
+    private CreateUserRequest picker;
+
+    private CreateUserRequest printer;
+
+    private CreateUserRequest questionTaker;
+
+    private CreateUserRequest examTaker;
+
+    private CreateUserRequest examGiver;
+
+    private CreateUserRequest pointGiver;
+
     private String note;
 }

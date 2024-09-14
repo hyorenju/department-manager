@@ -19,15 +19,15 @@ public class CustomExamRepository {
     public static Specification<Exam> filterExamList(GetExamListRequest request) {
         return ((root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
-            if(StringUtils.hasText(request.getDepartmentId())){
+            if (StringUtils.hasText(request.getDepartmentId())) {
                 predicates.add(criteriaBuilder.like(root.get("subject").get("department").get("id"), request.getDepartmentId()));
-            } else if(StringUtils.hasText(request.getFacultyId())){
+            } else if (StringUtils.hasText(request.getFacultyId())) {
                 predicates.add(criteriaBuilder.like(root.get("subject").get("department").get("faculty").get("id"), request.getFacultyId()));
             }
-            if(StringUtils.hasText(request.getSubjectName())){
+            if (StringUtils.hasText(request.getSubjectName())) {
                 predicates.add(criteriaBuilder.like(root.get("subject").get("name"), "%" + request.getSubjectName() + "%"));
             }
-            if (request.getSchoolYear()!=null) {
+            if (request.getSchoolYear() != null) {
                 predicates.add(criteriaBuilder.equal(root.get("schoolYear").get("id"), request.getSchoolYear()));
             }
             if (request.getTerm() != null) {
@@ -36,24 +36,20 @@ public class CustomExamRepository {
             if (request.getFormId() != null) {
                 predicates.add(criteriaBuilder.equal(root.get("form").get("id"), request.getFormId()));
             }
-            if (StringUtils.hasText(request.getTestDay())){
+            if (StringUtils.hasText(request.getTestDay())) {
                 try {
                     predicates.add(criteriaBuilder.equal(root.get("testDay"), MyUtils.convertTimestampFromString(request.getTestDay())));
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
             }
-//            if(StringUtils.hasText(request.getProctorId())){
-//                predicates.add(criteriaBuilder.like(root.get("proctor1").get("id"), request.getProctorId()));
-//                predicates.add(criteriaBuilder.like(root.get("proctor2").get("id"), request.getProctorId()));
-//            }
             if (StringUtils.hasText(request.getProctorId())) {
                 predicates.add(
                         CriteriaBuilderUtil.createPredicateForSearchInsensitive(root, criteriaBuilder, request.getProctorId(),
                                 "proctor1", "proctor2")
                 );
             }
-            if(StringUtils.hasText(request.getClassId())){
+            if (StringUtils.hasText(request.getClassId())) {
                 predicates.add(criteriaBuilder.like(root.get("classId"), "%" + request.getClassId() + "%"));
             }
 
@@ -74,15 +70,15 @@ public class CustomExamRepository {
     public static Specification<Exam> filterExportExam(ExportExamRequest request) {
         return ((root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
-            if(StringUtils.hasText(request.getDepartmentId())){
+            if (StringUtils.hasText(request.getDepartmentId())) {
                 predicates.add(criteriaBuilder.like(root.get("subject").get("department").get("id"), request.getDepartmentId()));
-            } else if(StringUtils.hasText(request.getFacultyId())){
+            } else if (StringUtils.hasText(request.getFacultyId())) {
                 predicates.add(criteriaBuilder.like(root.get("subject").get("department").get("faculty").get("id"), request.getFacultyId()));
             }
-            if(StringUtils.hasText(request.getSubjectName())){
+            if (StringUtils.hasText(request.getSubjectName())) {
                 predicates.add(criteriaBuilder.like(root.get("subject").get("name"), "%" + request.getSubjectName() + "%"));
             }
-            if (request.getSchoolYear()!=null) {
+            if (request.getSchoolYear() != null) {
                 predicates.add(criteriaBuilder.equal(root.get("schoolYear").get("id"), request.getSchoolYear()));
             }
             if (request.getTerm() != null) {
@@ -91,7 +87,7 @@ public class CustomExamRepository {
             if (request.getFormId() != null) {
                 predicates.add(criteriaBuilder.equal(root.get("form").get("id"), request.getFormId()));
             }
-            if (StringUtils.hasText(request.getTestDay())){
+            if (StringUtils.hasText(request.getTestDay())) {
                 try {
                     predicates.add(criteriaBuilder.equal(root.get("testDay"), MyUtils.convertTimestampFromString(request.getTestDay())));
                 } catch (ParseException e) {
@@ -108,7 +104,7 @@ public class CustomExamRepository {
                                 "proctor1", "proctor2")
                 );
             }
-            if(StringUtils.hasText(request.getClassId())){
+            if (StringUtils.hasText(request.getClassId())) {
                 predicates.add(criteriaBuilder.like(root.get("classId"), "%" + request.getClassId() + "%"));
             }
 
