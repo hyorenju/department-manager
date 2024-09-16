@@ -12,6 +12,7 @@ import vn.edu.vnua.department.exam.entity.Exam;
 import vn.edu.vnua.department.exam.entity.ExamDTO;
 import vn.edu.vnua.department.exam.request.*;
 import vn.edu.vnua.department.exam.service.ExamService;
+import vn.edu.vnua.department.masterdata.request.GetUsersNotAssignedRequest;
 import vn.edu.vnua.department.teaching.entity.TeachingDTO;
 import vn.edu.vnua.department.teaching.request.ExportTeachingRequest;
 import vn.edu.vnua.department.user.entity.UserDTO;
@@ -38,8 +39,16 @@ public class ExamController extends BaseController {
     }
 
     @PostMapping("assign-selection/{id}")
-    private ResponseEntity<?> getAssignSelection(@PathVariable Long id){
+    private ResponseEntity<?> getAssignSelectionByExam(@PathVariable Long id){
         List<UserDTO> response = examService.getUsersNotAssigned(id).stream().map(
+                user -> modelMapper.map(user, UserDTO.class)
+        ).toList();
+        return buildListItemResponse(response, response.size());
+    }
+
+    @PostMapping("assign-selection")
+    private ResponseEntity<?> getAssignSelectionByRequest(@RequestBody GetUsersNotAssignedRequest request) throws ParseException {
+        List<UserDTO> response = examService.getUsersNotAssigned(request).stream().map(
                 user -> modelMapper.map(user, UserDTO.class)
         ).toList();
         return buildListItemResponse(response, response.size());

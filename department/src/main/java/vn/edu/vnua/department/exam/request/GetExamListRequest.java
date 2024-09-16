@@ -10,6 +10,7 @@ public class GetExamListRequest extends GetPageBaseRequest {
     private Boolean isAll;
     private String facultyId;
     private String departmentId;
+    private String subjectId;
     private String subjectName;
     private Long schoolYear;
     private Byte term;

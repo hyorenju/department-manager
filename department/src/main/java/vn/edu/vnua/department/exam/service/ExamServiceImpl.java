@@ -16,6 +16,7 @@ import vn.edu.vnua.department.exam.repository.ExamRepository;
 import vn.edu.vnua.department.exam.request.*;
 import vn.edu.vnua.department.masterdata.entity.MasterData;
 import vn.edu.vnua.department.masterdata.repository.MasterDataRepository;
+import vn.edu.vnua.department.masterdata.request.GetUsersNotAssignedRequest;
 import vn.edu.vnua.department.service.excel.ExcelService;
 import vn.edu.vnua.department.subject.entity.Subject;
 import vn.edu.vnua.department.subject.repository.SubjectRepository;
@@ -176,6 +177,39 @@ public class ExamServiceImpl implements ExamService {
         Timestamp testDay = examNotAssigned.getTestDay();
         Integer lessonStartNotAssigned = examNotAssigned.getLessonStart();
         Integer lessonsTestNotAssigned = examNotAssigned.getLessonsTest();
+        List<Integer> lessonSeriesNotAssigned = createLessonSeries(lessonStartNotAssigned, lessonsTestNotAssigned);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User assigner = userRepository.getUserById(authentication.getPrincipal().toString());
+
+        Department department = assigner.getDepartment();
+        List<User> usersNotAssigned = userRepository.findAllByDepartment(department);
+        List<Exam> exams = examRepository.findAllByTestDay(testDay);
+
+
+        for (Exam exam :
+                exams) {
+            Integer lessonStart = exam.getLessonStart();
+            Integer lessonsTest = exam.getLessonsTest();
+            List<Integer> lessonSeries = createLessonSeries(lessonStart, lessonsTest);
+            for (int i = 0; i < lessonSeries.size(); i++) {
+                for (int j = 0; j < lessonSeriesNotAssigned.size(); j++) {
+                    if (lessonSeries.get(i).equals(lessonSeriesNotAssigned.get(j))) {
+                        usersNotAssigned.remove(exam.getProctor1());
+                        usersNotAssigned.remove(exam.getProctor2());
+                    }
+                }
+            }
+        }
+
+        return usersNotAssigned;
+    }
+
+    @Override
+    public List<User> getUsersNotAssigned(GetUsersNotAssignedRequest request) throws ParseException {
+        Timestamp testDay = MyUtils.convertTimestampFromString(request.getTestDay());
+        Integer lessonStartNotAssigned = request.getLessonStart();
+        Integer lessonsTestNotAssigned = request.getLessonsTest();
         List<Integer> lessonSeriesNotAssigned = createLessonSeries(lessonStartNotAssigned, lessonsTestNotAssigned);
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

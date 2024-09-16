@@ -37,7 +37,6 @@ public class CreateExamRequest {
     @NotNull(message = "Nhóm không được để trống")
     private Integer examGroup;
 
-    @NotNull(message = "Số lượng không được để trống")
     private Integer quantity;
 
     @NotNull(message = "Tổ thi không được để trống")

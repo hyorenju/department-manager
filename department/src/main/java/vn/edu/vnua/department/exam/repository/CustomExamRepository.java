@@ -24,6 +24,9 @@ public class CustomExamRepository {
             } else if (StringUtils.hasText(request.getFacultyId())) {
                 predicates.add(criteriaBuilder.like(root.get("subject").get("department").get("faculty").get("id"), request.getFacultyId()));
             }
+            if (StringUtils.hasText(request.getSubjectId())) {
+                predicates.add(criteriaBuilder.like(root.get("subject").get("id"), "%" + request.getSubjectId() + "%"));
+            }
             if (StringUtils.hasText(request.getSubjectName())) {
                 predicates.add(criteriaBuilder.like(root.get("subject").get("name"), "%" + request.getSubjectName() + "%"));
             }
