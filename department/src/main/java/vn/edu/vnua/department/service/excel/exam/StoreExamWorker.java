@@ -90,7 +90,7 @@ public class StoreExamWorker implements Callable<ExamExcelData> {
                     .cluster(StringUtils.hasText(cluster) ? MyUtils.parseIntegerFromString(cluster) : null)
                     .quantity(StringUtils.hasText(quantity) ? MyUtils.parseIntegerFromString(quantity) : null)
                     .form(examForm)
-                    .examCode(StringUtils.hasText(examCode) ? MyUtils.parseIntegerFromString(examCode) : null)
+                    .examCode(examCode)
                     .lecturerTeach(lecturerTeach)
                     .picker(picker)
                     .printer(printer)

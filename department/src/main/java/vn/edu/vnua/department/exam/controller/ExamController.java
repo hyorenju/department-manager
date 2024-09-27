@@ -77,7 +77,7 @@ public class ExamController extends BaseController {
         List<ExamDTO> response = examService.importFromExcel(file).stream().map(
                 exam -> modelMapper.map(exam, ExamDTO.class)
         ).toList();
-        return buildItemResponse(response);
+        return buildListItemResponse(response, response.size());
     }
 
     @PostMapping("export")

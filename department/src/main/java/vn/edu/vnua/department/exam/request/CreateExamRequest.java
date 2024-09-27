@@ -44,7 +44,7 @@ public class CreateExamRequest {
 
     private CreateMasterDataRequest form;
 
-    private Integer examCode;
+    private String examCode;
 
     private CreateUserRequest lecturerTeach;
 

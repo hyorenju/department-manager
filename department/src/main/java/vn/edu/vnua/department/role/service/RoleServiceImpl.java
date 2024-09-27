@@ -26,25 +26,25 @@ public class RoleServiceImpl implements RoleService {
         User user = userRepository.getUserById(authentication.getPrincipal().toString());
 
         switch (user.getRole().getId()) {
-            case Constants.RoleIdConstant.PRINCIPAL: {
+            case Constants.RoleIdConstant.ADMIN: {
                 List<Role> roleSelection = roleRepository.findAll();
-                Role role = roleRepository.findById(Constants.RoleIdConstant.PRINCIPAL).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
+                Role role = roleRepository.findById(Constants.RoleIdConstant.ADMIN).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
                 roleSelection.remove(role);
                 return roleSelection;
             }
             case Constants.RoleIdConstant.DEAN: {
                 List<Role> roleSelection = roleRepository.findAll();
-                Role rolePrinciple = roleRepository.findById(Constants.RoleIdConstant.PRINCIPAL).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
+                Role roleAdmin = roleRepository.findById(Constants.RoleIdConstant.ADMIN).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
                 Role roleDean = roleRepository.findById(Constants.RoleIdConstant.DEAN).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
-                roleSelection.remove(rolePrinciple);
+                roleSelection.remove(roleAdmin);
                 roleSelection.remove(roleDean);
                 return roleSelection;
             }
             case Constants.RoleIdConstant.MANAGER: {
                 List<Role> roleSelection = new ArrayList<>();
-                Role rolePrinciple = roleRepository.findById(Constants.RoleIdConstant.LECTURER).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
+                Role roleAdmin = roleRepository.findById(Constants.RoleIdConstant.LECTURER).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
                 Role roleDean = roleRepository.findById(Constants.RoleIdConstant.DEPUTY).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
-                roleSelection.add(rolePrinciple);
+                roleSelection.add(roleAdmin);
                 roleSelection.add(roleDean);
                 return roleSelection;
             }

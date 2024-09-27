@@ -43,8 +43,10 @@ public class Project {
     @Column(name = "deadline")
     private Timestamp deadline;
 
+    @ManyToOne
+    @JoinColumn(name = "project_status")
+    private MasterData projectStatus;
+
     @OneToMany(mappedBy = "project")
     private Collection<Task> tasks;
-
-
 }

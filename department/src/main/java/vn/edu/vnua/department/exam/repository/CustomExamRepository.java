@@ -55,6 +55,30 @@ public class CustomExamRepository {
             if (StringUtils.hasText(request.getClassId())) {
                 predicates.add(criteriaBuilder.like(root.get("classId"), "%" + request.getClassId() + "%"));
             }
+            if (request.getExamGroup() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("examGroup"), request.getExamGroup()));
+            }
+            if (request.getCluster() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("cluster"), request.getCluster()));
+            }
+            if (request.getQuantity() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("quantity"), request.getQuantity()));
+            }
+            if (StringUtils.hasText(request.getTestRoom())) {
+                predicates.add(criteriaBuilder.like(root.get("testRoom"), "%" + request.getTestRoom() + "%"));
+            }
+            if (request.getLessonStart() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("lessonStart"), request.getTestRoom()));
+            }
+            if (request.getLessonsTest() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("lessonsTest"), request.getLessonsTest()));
+            }
+            if (StringUtils.hasText(request.getExamCode())) {
+                predicates.add(criteriaBuilder.equal(root.get("examCode"), "%" + request.getExamCode() + "%"));
+            }
+            if (StringUtils.hasText(request.getLecturerTeachId())) {
+                predicates.add(criteriaBuilder.like(root.get("lecturerTeach").get("id"), "%" + request.getTestRoom() + "%"));
+            }
 
             query.orderBy(
                     criteriaBuilder.desc(root.get("schoolYear").get("name")),

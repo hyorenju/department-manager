@@ -8,6 +8,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import vn.edu.vnua.department.common.Constants;
+import vn.edu.vnua.department.masterdata.entity.MasterData;
+import vn.edu.vnua.department.masterdata.repository.MasterDataRepository;
 import vn.edu.vnua.department.project.entity.Project;
 import vn.edu.vnua.department.project.repository.CustomProjectRepository;
 import vn.edu.vnua.department.project.repository.ProjectRepository;
@@ -27,6 +29,7 @@ import java.time.LocalDateTime;
 public class ProjectServiceImpl implements ProjectService {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
+    private final MasterDataRepository masterDataRepository;
 
     @Override
     public Page<Project> getProjectList(GetProjectListRequest request) {
@@ -45,6 +48,8 @@ public class ProjectServiceImpl implements ProjectService {
             throw new RuntimeException(Constants.ProjectConstant.DATE_BETWEEN_PROBLEM);
         }
 
+        MasterData projectStatus = masterDataRepository.findByName(Constants.MasterDataNameConstant.DOING);
+
         return projectRepository.saveAndFlush(
                 Project.builder()
                         .name(request.getName())
@@ -52,6 +57,7 @@ public class ProjectServiceImpl implements ProjectService {
                         .createdAt(Timestamp.valueOf(LocalDateTime.now()))
                         .createdBy(createdBy)
                         .start(start)
+                        .projectStatus(projectStatus)
                         .deadline(deadline)
                         .build()
         );

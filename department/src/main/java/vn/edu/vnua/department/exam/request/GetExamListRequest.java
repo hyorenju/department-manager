@@ -18,4 +18,19 @@ public class GetExamListRequest extends GetPageBaseRequest {
     private String testDay;
     private String proctorId;
     private String classId;
+    private Integer examGroup;
+    private Integer cluster;
+    private Integer quantity;
+    private String testRoom;
+    private Integer lessonStart;
+    private Integer lessonsTest;
+    private String examCode;
+    private String lecturerTeachId;
+    private String markerId;
+    private String pickerId;
+    private String printerId;
+    private String questionTakerId;
+    private String examTakerId;
+    private String examGiverId;
+    private String pointGiverId;
 }

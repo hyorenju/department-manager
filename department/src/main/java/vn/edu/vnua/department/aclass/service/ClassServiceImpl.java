@@ -7,6 +7,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import vn.edu.vnua.department.aclass.entity.AClass;
 import vn.edu.vnua.department.aclass.repository.ClassRepository;
 import vn.edu.vnua.department.aclass.repository.CustomClassRepository;
@@ -22,9 +23,11 @@ import vn.edu.vnua.department.user.entity.User;
 import vn.edu.vnua.department.user.repository.CustomUserRepository;
 import vn.edu.vnua.department.user.repository.UserRepository;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @RequiredArgsConstructor
@@ -96,6 +99,11 @@ public class ClassServiceImpl implements ClassService{
         } catch (Exception e) {
             throw new RuntimeException(Constants.ClassConstant.CANNOT_DELETE);
         }
+    }
+
+    @Override
+    public List<AClass> importFromExcel(MultipartFile file) throws IOException, ExecutionException, InterruptedException {
+        return classRepository.saveAll(excelService.readClassFromExcel(file));
     }
 
     @Override

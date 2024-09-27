@@ -16,6 +16,6 @@ public class UserTaskDTO {
     private TaskDTO task;
     @JsonFormat(pattern = Constants.DateTimeConstants.DATE_TIME_FORMAT, timezone = Constants.DateTimeConstants.TIME_ZONE)
     private Timestamp finishedAt;
-    private MasterDataDTO taskStatus;
+    private MasterDataDTO personalStatus;
     private String note;
 }

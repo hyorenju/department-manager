@@ -73,7 +73,7 @@ public class InternServiceImpl implements InternService {
                     .outlineFile(request.getOutlineFile())
                     .progressFile(request.getProgressFile())
                     .finalFile(request.getFinalFile())
-                    .status(StringUtils.hasText(request.getFinalFile()) ? Constants.StatusConstant.COMPLETED : Constants.StatusConstant.INCOMPLETE)
+                    .status(StringUtils.hasText(request.getFinalFile()) ? Constants.UploadFileStatusConstant.COMPLETED : Constants.UploadFileStatusConstant.INCOMPLETE)
                     .note(request.getNote())
                     .isLock(false)
                     .build());
@@ -114,8 +114,8 @@ public class InternServiceImpl implements InternService {
             }
 
             if (intern.getFinalFile() != null) {
-                intern.setStatus(Constants.StatusConstant.COMPLETED);
-            } else intern.setStatus(Constants.StatusConstant.INCOMPLETE);
+                intern.setStatus(Constants.UploadFileStatusConstant.COMPLETED);
+            } else intern.setStatus(Constants.UploadFileStatusConstant.INCOMPLETE);
 
 
             return internRepository.saveAndFlush(intern);
@@ -175,7 +175,8 @@ public class InternServiceImpl implements InternService {
 
     @Override
     public List<Intern> importFromExcel(MultipartFile file) throws IOException, ExecutionException, InterruptedException {
-        return internRepository.saveAll(excelService.readInternFromExcel(file));
+//        return internRepository.saveAll(excelService.readInternFromExcel(file));
+        return null;
     }
 
     @Override
@@ -198,6 +199,7 @@ public class InternServiceImpl implements InternService {
         }
         Specification<Intern> specification = CustomInternRepository.filterExportIntern(request);
         List<Intern> interns = internRepository.findAll(specification);
-        return excelService.writeInternToExcel(interns);
+//        return excelService.writeInternToExcel(interns);
+        return null;
     }
 }

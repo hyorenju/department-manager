@@ -55,7 +55,7 @@ public class StoreTeachingWorker implements Callable<TeachingExcelData> {
                     .teacher(teacher)
                     .classId(classId)
                     .teachingGroup(StringUtils.hasText(teachingGroup) ? MyUtils.parseIntegerFromString(teachingGroup) : null)
-                    .status(Constants.StatusConstant.INCOMPLETE)
+                    .status(Constants.UploadFileStatusConstant.INCOMPLETE)
                     .createdAt(Timestamp.valueOf(LocalDateTime.now()))
                     .createdBy(createdBy)
                     .isLock(false)

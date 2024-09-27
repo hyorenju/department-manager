@@ -16,7 +16,7 @@ public class ReadInternWorker implements Callable<String> { private Row row;
     @Override
     public String call() {
         StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 10; i++) {
             Cell cell = row.getCell(i);
             String data = "";
             if (cell != null) {

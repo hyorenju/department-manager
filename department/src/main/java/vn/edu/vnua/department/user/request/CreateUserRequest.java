@@ -17,9 +17,11 @@ public class CreateUserRequest {
     private String id;
 
     @NotBlank(message = "Họ đệm giảng viên không được để trống")
+    @Pattern(regexp = "^[\\p{L}]*$")
     private String firstName;
 
     @NotBlank(message = "Tên giảng viên không được để trống")
+    @Pattern(regexp = "^[\\p{L}]*$")
     private String lastName;
 
     private CreateMasterDataRequest degree;

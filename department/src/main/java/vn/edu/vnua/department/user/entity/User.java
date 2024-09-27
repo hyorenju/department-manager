@@ -9,14 +9,17 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import vn.edu.vnua.department.aclass.entity.AClass;
 import vn.edu.vnua.department.department.entity.Department;
+import vn.edu.vnua.department.domain.validation.ImportUserValidation;
 import vn.edu.vnua.department.exam.entity.Exam;
 import vn.edu.vnua.department.faculty.entity.Faculty;
 import vn.edu.vnua.department.intern.entity.Intern;
+import vn.edu.vnua.department.internship.entity.Internship;
 import vn.edu.vnua.department.masterdata.entity.MasterData;
 import vn.edu.vnua.department.project.entity.Project;
 import vn.edu.vnua.department.role.entity.Role;
 import vn.edu.vnua.department.subject.entity.Subject;
 import vn.edu.vnua.department.teaching.entity.Teaching;
+import vn.edu.vnua.department.user.model.UserExcelData;
 import vn.edu.vnua.department.userjointask.entity.UserTask;
 
 import java.sql.Timestamp;
@@ -88,8 +91,33 @@ public class User {
         return authorities;
     }
 
+    public List<UserExcelData.ErrorDetail> validateInformationDetailError(List<UserExcelData.ErrorDetail> errorDetailList){
+        if(!ImportUserValidation.validateUserId(id)) {
+            errorDetailList.add(UserExcelData.ErrorDetail.builder().columnIndex(0).errorMsg("Mã người dùng không hợp lệ").build());
+        }
+        if(!ImportUserValidation.validateUserName(firstName)) {
+            errorDetailList.add(UserExcelData.ErrorDetail.builder().columnIndex(1).errorMsg("Không được chứa ký tự đặc biệt").build());
+        }
+        if (!ImportUserValidation.validateUserName(lastName)) {
+            errorDetailList.add(UserExcelData.ErrorDetail.builder().columnIndex(2).errorMsg("Không được chứa ký tự đặc biệt").build());
+        }
+        if (!ImportUserValidation.validateUserEmail(email)) {
+            errorDetailList.add(UserExcelData.ErrorDetail.builder().columnIndex(4).errorMsg("Phải là định dạng gmail").build());
+        }
+        if (!ImportUserValidation.validateUserPhoneNumber(phoneNumber)) {
+            errorDetailList.add(UserExcelData.ErrorDetail.builder().columnIndex(5).errorMsg("SĐT không hợp lệ").build());
+        }
+        return errorDetailList;
+    }
+
     @OneToMany(mappedBy = "instructor")
     private Collection<Intern> interns;
+
+    @OneToMany(mappedBy = "createdBy")
+    private Collection<Internship> createdInternships;
+
+    @OneToMany(mappedBy = "modifiedBy")
+    private Collection<Internship> modifiedInternships;
 
     @OneToMany(mappedBy = "teacher")
     private Collection<Teaching> teachingAssignments;

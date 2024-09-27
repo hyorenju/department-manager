@@ -13,6 +13,6 @@ public class CreateProjectRequest {
     @NotBlank(message = "Ngày bắt đầu không được để trống")
     private String start;
 
-    @NotBlank(message = "Hạn chót không được để trống")
+    @NotBlank(message = "Ngày kết thúc không được để trống")
     private String deadline;
 }

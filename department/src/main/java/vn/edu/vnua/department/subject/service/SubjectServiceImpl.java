@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 import vn.edu.vnua.department.aclass.entity.AClass;
 import vn.edu.vnua.department.aclass.repository.CustomClassRepository;
 import vn.edu.vnua.department.common.Constants;
@@ -20,9 +21,11 @@ import vn.edu.vnua.department.subject.request.*;
 import vn.edu.vnua.department.user.entity.User;
 import vn.edu.vnua.department.user.repository.UserRepository;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @RequiredArgsConstructor
@@ -98,6 +101,11 @@ public class SubjectServiceImpl implements SubjectService {
         Subject subject = subjectRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.SubjectConstant.SUBJECT_NOT_FOUND));
         subjectRepository.delete(subject);
         return subject;
+    }
+
+    @Override
+    public List<Subject> importFromExcel(MultipartFile file) throws IOException, ExecutionException, InterruptedException {
+        return subjectRepository.saveAll(excelService.readSubjectFromExcel(file));
     }
 
     @Override

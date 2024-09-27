@@ -70,7 +70,7 @@ public class InternController extends BaseController {
         List<InternDTO> response = internService.importFromExcel(file).stream().map(
                 intern -> modelMapper.map(intern, InternDTO.class)
         ).toList();
-        return buildItemResponse(response);
+        return buildListItemResponse(response, response.size());
     }
 
     @PostMapping("export")

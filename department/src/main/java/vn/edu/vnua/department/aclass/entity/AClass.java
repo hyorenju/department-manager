@@ -5,10 +5,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import vn.edu.vnua.department.aclass.model.ClassExcelData;
+import vn.edu.vnua.department.domain.validation.ImportClassValidation;
+import vn.edu.vnua.department.domain.validation.ImportUserValidation;
 import vn.edu.vnua.department.faculty.entity.Faculty;
+import vn.edu.vnua.department.model.excel.ExcelData;
 import vn.edu.vnua.department.user.entity.User;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -56,5 +61,12 @@ public class AClass {
 
     @Column
     private String note;
+
+    public List<ClassExcelData.ErrorDetail> validateInformationDetailError(List<ClassExcelData.ErrorDetail> errorDetailList){
+        if(!ImportClassValidation.validateClassId(id)) {
+            errorDetailList.add(ClassExcelData.ErrorDetail.builder().columnIndex(0).errorMsg("Không được chứa ký tự đặc biệt").build());
+        }
+        return errorDetailList;
+    }
 
 }

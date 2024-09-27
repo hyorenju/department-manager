@@ -4,7 +4,7 @@ import vn.edu.vnua.department.common.Constants;
 
 public class ImportInternValidator {
     public static boolean validateInternName(String name){
-        return name.matches(Constants.InternConstant.INTERN_NAME_REGEX);
+        return name.matches(Constants.InternshipConstant.TOPIC_NAME_REGEX);
     }
 
     public static boolean validateNaturalNum(Byte naturalNum){

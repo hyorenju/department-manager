@@ -31,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
 @Service
@@ -52,34 +53,25 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getUserSelection(GetUserSelectionRequest request) {
-        User dev = userRepository.findById(Constants.DevAccountConstant.DEV).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
         List<User> users;
         if (StringUtils.hasText(request.getDepartmentId())) {
             users = userRepository.findAllByDepartmentId(request.getDepartmentId());
-            users.remove(dev);
             return users;
         } else if (StringUtils.hasText(request.getFacultyId())) {
             users = userRepository.findAllByDepartmentFacultyId(request.getFacultyId());
-            users.remove(dev);
             return users;
         } else {
             users = userRepository.findAll();
-            users.remove(dev);
             return users;
         }
     }
 
     @Override
-    public List<User> getUserPicked() {
-        User dev = userRepository.findById(Constants.DevAccountConstant.DEV).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
-
+    public List<User> getUserOption() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User me = userRepository.getUserById(authentication.getPrincipal().toString());
 
-        List<User> users = userRepository.findAllByDepartment(me.getDepartment());
-        users.remove(dev);
-
-        return users;
+        return userRepository.findAllByDepartment(me.getDepartment());
     }
 
     @Override
@@ -112,7 +104,7 @@ public class UserServiceImpl implements UserService {
             switch (roleId) {
                 case Constants.RoleIdConstant.DEPUTY, Constants.RoleIdConstant.MANAGER -> manage = user.getDepartment().getId();
                 case Constants.RoleIdConstant.DEAN -> manage = user.getDepartment().getFaculty().getId();
-                case Constants.RoleIdConstant.PRINCIPAL -> manage = Constants.SchoolNameAbbreviationConstant.SCHOOL_NAME;
+                case Constants.RoleIdConstant.ADMIN -> manage = Constants.SchoolNameAbbreviationConstant.SCHOOL_NAME;
                 default -> manage = null;
             }
 
@@ -127,7 +119,7 @@ public class UserServiceImpl implements UserService {
                             .email(request.getEmail())
                             .phoneNumber(request.getPhoneNumber())
                             .department(department)
-                            .password(StringUtils.hasText(request.getPassword()) ? encoder.encode(request.getPassword()) : encoder.encode("123"))
+                            .password(StringUtils.hasText(request.getPassword()) ? encoder.encode(request.getPassword()) : encoder.encode(Constants.UserConstant.DEFAULT_PASSWORD))
                             .createdAt(Timestamp.valueOf(LocalDateTime.now()))
                             .role(role)
                             .manage(manage)
@@ -163,16 +155,16 @@ public class UserServiceImpl implements UserService {
 
             //Bắt lỗi nếu cấp dưới muốn update cấp trên
             if (managerRoleId.equals(Constants.RoleIdConstant.DEAN) &&
-                    userRoleId.equals(Constants.RoleIdConstant.PRINCIPAL)) {
+                    userRoleId.equals(Constants.RoleIdConstant.ADMIN)) {
                 throw new RuntimeException(Constants.UserConstant.CANNOT_MANAGE_SUPERIOR);
             } else if (managerRoleId.equals(Constants.RoleIdConstant.MANAGER) &&
                     (userRoleId.equals(Constants.RoleIdConstant.DEAN) ||
-                            userRoleId.equals(Constants.RoleIdConstant.PRINCIPAL))) {
+                            userRoleId.equals(Constants.RoleIdConstant.ADMIN))) {
                 throw new RuntimeException(Constants.UserConstant.CANNOT_MANAGE_SUPERIOR);
             } else if (managerRoleId.equals(Constants.RoleIdConstant.DEPUTY) &&
                     (userRoleId.equals(Constants.RoleIdConstant.MANAGER) ||
                             userRoleId.equals(Constants.RoleIdConstant.DEAN) ||
-                            userRoleId.equals(Constants.RoleIdConstant.PRINCIPAL))) {
+                            userRoleId.equals(Constants.RoleIdConstant.ADMIN))) {
                 throw new RuntimeException(Constants.UserConstant.CANNOT_MANAGE_SUPERIOR);
             }
 
@@ -185,13 +177,13 @@ public class UserServiceImpl implements UserService {
             if (user.getRole().getId().equals(Constants.RoleIdConstant.MANAGER) ||
                     user.getRole().getId().equals(Constants.RoleIdConstant.DEPUTY)) {
                 if (manager.getDepartment() != user.getDepartment() &&
-                !manager.getRole().getId().equals(Constants.RoleIdConstant.PRINCIPAL) &&
+                !manager.getRole().getId().equals(Constants.RoleIdConstant.ADMIN) &&
                         !manager.getRole().getId().equals(Constants.RoleIdConstant.DEAN)) {
                     throw new RuntimeException(Constants.UserConstant.CANNOT_MANAGE_ANOTHER_DEPARTMENT);
                 }
             } else if (user.getRole().getId().equals(Constants.RoleIdConstant.DEAN)) {
                 if (manager.getDepartment().getFaculty() != user.getDepartment().getFaculty() &&
-                        !manager.getRole().getId().equals(Constants.RoleIdConstant.PRINCIPAL)) {
+                        !manager.getRole().getId().equals(Constants.RoleIdConstant.ADMIN)) {
                     throw new RuntimeException(Constants.UserConstant.CANNOT_MANAGE_ANOTHER_FACULTY);
                 }
             }
@@ -210,7 +202,7 @@ public class UserServiceImpl implements UserService {
             switch (roleId) {
                 case Constants.RoleIdConstant.DEPUTY, Constants.RoleIdConstant.MANAGER -> user.setManage(user.getDepartment().getId());
                 case Constants.RoleIdConstant.DEAN -> user.setManage(user.getDepartment().getFaculty().getId());
-                case Constants.RoleIdConstant.PRINCIPAL -> user.setManage(Constants.SchoolNameAbbreviationConstant.SCHOOL_NAME);
+                case Constants.RoleIdConstant.ADMIN -> user.setManage(Constants.SchoolNameAbbreviationConstant.SCHOOL_NAME);
                 default -> user.setManage(null);
             }
 
@@ -334,9 +326,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User createPrincipal(String id) {
+    public List<User> importFromExcel(MultipartFile file) throws IOException, ExecutionException, InterruptedException {
+        return userRepository.saveAll(excelService.readUserFromExcel(file));
+    }
+
+    @Override
+    public User createAdmin(String id) {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
-        Role role = roleRepository.findById(Constants.RoleIdConstant.PRINCIPAL).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
+        Role role = roleRepository.findById(Constants.RoleIdConstant.ADMIN).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
         user.setRole(role);
         user.setManage(Constants.SchoolNameAbbreviationConstant.SCHOOL_NAME);
         return userRepository.saveAndFlush(user);
@@ -361,7 +358,7 @@ public class UserServiceImpl implements UserService {
                             .email(request.getEmail())
                             .phoneNumber(request.getPhoneNumber())
                             .department(department)
-                            .password(StringUtils.hasText(request.getPassword()) ? encoder.encode(request.getPassword()) : encoder.encode("123"))
+                            .password(StringUtils.hasText(request.getPassword()) ? encoder.encode(request.getPassword()) : encoder.encode(Constants.UserConstant.DEFAULT_PASSWORD))
                             .createdAt(Timestamp.valueOf(LocalDateTime.now()))
                             .role(role)
                             .note(request.getNote())

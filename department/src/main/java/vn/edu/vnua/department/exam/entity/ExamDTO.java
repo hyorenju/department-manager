@@ -36,7 +36,7 @@ public class ExamDTO {
     private UserBasicDTO marker1;
     private UserBasicDTO marker2;
     private MasterDataDTO form;
-    private Integer examCode;
+    private String examCode;
     private UserBasicDTO picker;
     private UserBasicDTO printer;
     private UserBasicDTO questionTaker;

@@ -1,5 +1,6 @@
 package vn.edu.vnua.department.task.service;
 
+import lombok.Generated;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -8,6 +9,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import vn.edu.vnua.department.common.Constants;
+import vn.edu.vnua.department.masterdata.entity.MasterData;
+import vn.edu.vnua.department.masterdata.repository.MasterDataRepository;
 import vn.edu.vnua.department.project.entity.Project;
 import vn.edu.vnua.department.project.repository.ProjectRepository;
 import vn.edu.vnua.department.task.entity.Task;
@@ -19,6 +22,7 @@ import vn.edu.vnua.department.task.request.UpdateTaskParticipantRequest;
 import vn.edu.vnua.department.task.request.UpdateTaskRequest;
 import vn.edu.vnua.department.user.entity.User;
 import vn.edu.vnua.department.user.repository.UserRepository;
+import vn.edu.vnua.department.userjointask.entity.UserTask;
 import vn.edu.vnua.department.userjointask.service.UserTaskService;
 import vn.edu.vnua.department.util.MyUtils;
 
@@ -26,6 +30,7 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -34,6 +39,7 @@ public class TaskServiceImpl implements TaskService {
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
+    private final MasterDataRepository masterDataRepository;
 
     @Override
     public List<Task> getTaskList(GetTaskListRequest request) {
@@ -43,10 +49,12 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public Task createdTask(CreateTaskRequest request) throws ParseException {
+        //Lấy thông tin người tạo
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User modifier = userRepository.getUserById(authentication.getPrincipal().toString());
 
         Project project = projectRepository.findById(request.getProjectId()).orElseThrow(() -> new RuntimeException(Constants.ProjectConstant.PROJECT_NOT_FOUND));
+        //Kiểm tra nếu người tạo task khác người tạo project
         User createdBy = project.getCreatedBy();
         if (!modifier.getRole().getId().equals(Constants.RoleIdConstant.MANAGER) &&
                 !modifier.getRole().getId().equals(Constants.RoleIdConstant.DEPUTY) &&
@@ -54,6 +62,7 @@ public class TaskServiceImpl implements TaskService {
             throw new RuntimeException(Constants.TaskConstant.CANNOT_UPDATE);
         }
 
+        //Lỗi nếu ngày kết thúc < ngày bắt đầu
         Timestamp start = MyUtils.convertTimestampFromString(request.getStart());
         Timestamp deadline = MyUtils.convertTimestampFromString(request.getDeadline());
         if (start.after(deadline)) {
@@ -62,24 +71,40 @@ public class TaskServiceImpl implements TaskService {
 
         String projectStart = MyUtils.convertTimestampToString(project.getStart());
         String projectDeadline = MyUtils.convertTimestampToString(project.getDeadline());
+        //Lỗi nếu ngày bắt đầu của task < ngày bắt đầu của project
         if (start.before(project.getStart()) || start.after(project.getDeadline())) {
             throw new RuntimeException(String.format(Constants.TaskConstant.START_PROBLEM, projectStart, projectDeadline));
         }
+        //Lỗi nếu ngày kết thúc của task > ngày kết thúc của project
         if (deadline.before(project.getStart()) || deadline.after(project.getDeadline())) {
             throw new RuntimeException(String.format(Constants.TaskConstant.DEADLINE_PROBLEM, projectStart, projectDeadline));
         }
 
-        return taskRepository.saveAndFlush(
-                Task.builder()
-                        .name(request.getName())
-                        .description(request.getDescription())
-                        .createdAt(Timestamp.valueOf(LocalDateTime.now()))
-                        .start(start)
-                        .deadline(deadline)
-                        .ordinalNumber(project.getTasks().size() + 1)
-                        .project(project)
-                        .build()
-        );
+        MasterData doingStatus = masterDataRepository.findByName(Constants.MasterDataNameConstant.DOING);
+
+        Task task = new Task();
+        task.setName(request.getName());
+        task.setDescription(request.getDescription());
+        task.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
+        task.setStart(start);
+        task.setDeadline(deadline);
+        task.setOrdinalNumber(project.getTasks().size() + 1);
+        task.setTaskStatus(doingStatus);
+        task.setProject(project);
+
+        List<UserTask> userTasks = new ArrayList<>();
+        for (String userId :
+                request.getUserIds()) {
+            UserTask userTask = new UserTask();
+//            userTask.setTask(task);
+            userTask.setUser(User.builder().id(userId).build());
+            userTask.setPersonalStatus(doingStatus);
+            userTasks.add(userTask);
+        }
+
+        task.setUserJoined(userTasks);
+
+        return taskRepository.saveAndFlush(task);
     }
 
     @Override
@@ -124,10 +149,21 @@ public class TaskServiceImpl implements TaskService {
             throw new RuntimeException(String.format(Constants.TaskConstant.DEADLINE_PROBLEM, projectStartStr, projectDeadlineStr));
         }
 
+        List<UserTask> userTasks = new ArrayList<>();
+        for (String userId :
+                request.getUserIds()) {
+            userTasks.add(UserTask.builder()
+                    .task(task)
+                    .user(userRepository.getUserById(userId))
+                    .personalStatus(masterDataRepository.findByName(Constants.MasterDataNameConstant.DOING))
+                    .build());
+        }
+
         task.setName(request.getName());
         task.setDescription(request.getDescription());
         task.setStart(start);
         task.setDeadline(deadline);
+        task.setUserJoined(userTasks);
 
         return taskRepository.saveAndFlush(task);
     }
@@ -148,7 +184,7 @@ public class TaskServiceImpl implements TaskService {
         }
 
         Task aboveTask = null;
-        if(task.getOrdinalNumber() > 1){
+        if (task.getOrdinalNumber() > 1) {
             aboveTask = taskRepository.findByProjectAndOrdinalNumber(task.getProject(), task.getOrdinalNumber() - 1);
             Integer intermediate = task.getOrdinalNumber();
             task.setOrdinalNumber(aboveTask.getOrdinalNumber());

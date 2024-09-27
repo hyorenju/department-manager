@@ -37,11 +37,9 @@ public class UserTask {
     private Timestamp finishedAt;
 
     @ManyToOne
-    @JoinColumn(name = "task_status")
-    private MasterData taskStatus;
+    @JoinColumn(name = "personal_status")
+    private MasterData personalStatus;
 
     @Column(name = "note")
     private String note;
-
-
 }

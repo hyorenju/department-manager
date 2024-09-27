@@ -21,7 +21,7 @@ import vn.edu.vnua.department.userjointask.repository.CustomUserTaskRepository;
 import vn.edu.vnua.department.userjointask.repository.UserTaskRepository;
 import vn.edu.vnua.department.userjointask.request.GetUserTaskListRequest;
 import vn.edu.vnua.department.userjointask.request.GetUserTaskPageRequest;
-import vn.edu.vnua.department.userjointask.request.UpdateTaskStatusRequest;
+import vn.edu.vnua.department.userjointask.request.UpdatePersonalStatusRequest;
 import vn.edu.vnua.department.userjointask.request.UpdateUserTaskRequest;
 
 import java.sql.Timestamp;
@@ -41,8 +41,11 @@ public class UserTaskServiceImpl implements UserTaskService{
     @Override
     public List<UserTask> getUserTaskList(GetUserTaskListRequest request) {
         request.setIsSchedule(false);
-        Specification<UserTask> specification = CustomUserTaskRepository.filterUserTaskList(request);
-        return userTaskRepository.findAll(specification);
+        if(request.getTaskId() != null) {
+            Specification<UserTask> specification = CustomUserTaskRepository.filterUserTaskList(request);
+            return userTaskRepository.findAll(specification);
+        }
+        return null;
     }
 
     @Override
@@ -74,7 +77,7 @@ public class UserTaskServiceImpl implements UserTaskService{
             userTasks.add(UserTask.builder()
                     .task(task)
                     .user(user)
-                    .taskStatus(masterDataRepository.findAllByType(Constants.MasterDataTypeConstant.TASK_STATUS, Sort.by("id").ascending()).get(0))
+                    .personalStatus(masterDataRepository.findAllByType(Constants.MasterDataTypeConstant.TASK_STATUS, Sort.by("id").ascending()).get(0))
                     .finishedAt(null)
                     .build());
         }
@@ -86,12 +89,12 @@ public class UserTaskServiceImpl implements UserTaskService{
     }
 
     @Override
-    public UserTask updateTaskStatus(UpdateTaskStatusRequest request, Long id) {
+    public UserTask updatePersonalStatus(UpdatePersonalStatusRequest request, Long id) {
         MasterData taskStatus = masterDataRepository.findById(request.getTaskStatusId()).orElseThrow(()->new RuntimeException(Constants.MasterDataConstant.TASK_STATUS_NOT_FOUND));
 
         UserTask userTask = userTaskRepository.findById(id).orElseThrow(()-> new RuntimeException(Constants.UserTaskConstant.USER_TASK_NOT_FOUND));
 
-        userTask.setTaskStatus(taskStatus);
+        userTask.setPersonalStatus(taskStatus);
         userTask.setNote(request.getNote());
 
         return userTaskRepository.saveAndFlush(userTask);
@@ -106,11 +109,11 @@ public class UserTaskServiceImpl implements UserTaskService{
         Timestamp startOfToday = Timestamp.valueOf(LocalDate.now().atStartOfDay());
 
         if(deadline.before(now)){
-            userTask.setTaskStatus(masterDataRepository.findByName(Constants.MasterDataNameConstant.FINISHED_LATE));
+            userTask.setPersonalStatus(masterDataRepository.findByName(Constants.MasterDataNameConstant.FINISHED_LATE));
         } else if(deadline.after(now)) {
-            userTask.setTaskStatus(masterDataRepository.findByName(Constants.MasterDataNameConstant.FINISHED_SOONER));
+            userTask.setPersonalStatus(masterDataRepository.findByName(Constants.MasterDataNameConstant.FINISHED_SOONER));
         } else if(deadline.equals(startOfToday)){
-            userTask.setTaskStatus(masterDataRepository.findByName(Constants.MasterDataNameConstant.FINISHED_ON_TIME));
+            userTask.setPersonalStatus(masterDataRepository.findByName(Constants.MasterDataNameConstant.FINISHED_ON_TIME));
         }
         userTask.setFinishedAt(now);
 
@@ -128,7 +131,7 @@ public class UserTaskServiceImpl implements UserTaskService{
         for (UserTask userTask:
              userTaskList) {
             if(userTask.getTask().getDeadline().before(Timestamp.valueOf(LocalDateTime.now()))){
-                userTask.setTaskStatus(masterDataRepository.findByName(Constants.MasterDataNameConstant.DOING_LATE));
+                userTask.setPersonalStatus(masterDataRepository.findByName(Constants.MasterDataNameConstant.DOING_LATE));
                 userTaskLate.add(userTask);
             }
         }

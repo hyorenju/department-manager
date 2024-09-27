@@ -7,4 +7,6 @@ import vn.edu.vnua.department.faculty.entity.Faculty;
 
 @Repository
 public interface FacultyRepository extends JpaRepository<Faculty, String> {
+    boolean existsByName(String name);
+    Faculty findByName(String name);
 }

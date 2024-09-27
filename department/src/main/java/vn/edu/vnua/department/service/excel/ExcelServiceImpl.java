@@ -5,18 +5,29 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import vn.edu.vnua.department.aclass.entity.AClass;
+import vn.edu.vnua.department.aclass.model.ClassExcelData;
+import vn.edu.vnua.department.aclass.repository.ClassRepository;
 import vn.edu.vnua.department.common.Constants;
+import vn.edu.vnua.department.department.repository.DepartmentRepository;
 import vn.edu.vnua.department.exam.entity.Exam;
 import vn.edu.vnua.department.exam.model.ExamExcelData;
 import vn.edu.vnua.department.exam.repository.ExamRepository;
-import vn.edu.vnua.department.intern.entity.Intern;
-import vn.edu.vnua.department.intern.model.InternExcelData;
+import vn.edu.vnua.department.faculty.repository.FacultyRepository;
+import vn.edu.vnua.department.internship.entity.Internship;
+import vn.edu.vnua.department.internship.model.InternshipExcelData;
+import vn.edu.vnua.department.internship.repository.InternshipRepository;
 import vn.edu.vnua.department.masterdata.repository.MasterDataRepository;
 import vn.edu.vnua.department.model.excel.ExcelData;
+import vn.edu.vnua.department.role.entity.Role;
+import vn.edu.vnua.department.role.repository.RoleRepository;
+import vn.edu.vnua.department.service.excel.aclass.ReadClassWorker;
+import vn.edu.vnua.department.service.excel.aclass.StoreClassWorker;
 import vn.edu.vnua.department.service.excel.aclass.WriteClassWorker;
+import vn.edu.vnua.department.service.excel.aclass.WriteErrorClassWorker;
 import vn.edu.vnua.department.service.excel.exam.ReadExamWorker;
 import vn.edu.vnua.department.service.excel.exam.StoreExamWorker;
 import vn.edu.vnua.department.service.excel.exam.WriteErrorExamWorker;
@@ -25,19 +36,27 @@ import vn.edu.vnua.department.service.excel.intern.ReadInternWorker;
 import vn.edu.vnua.department.service.excel.intern.StoreInternWorker;
 import vn.edu.vnua.department.service.excel.intern.WriteErrorInternWorker;
 import vn.edu.vnua.department.service.excel.intern.WriteInternWorker;
+import vn.edu.vnua.department.service.excel.subject.ReadSubjectWorker;
+import vn.edu.vnua.department.service.excel.subject.StoreSubjectWorker;
+import vn.edu.vnua.department.service.excel.subject.WriteErrorSubjectWorker;
 import vn.edu.vnua.department.service.excel.subject.WriteSubjectWorker;
 import vn.edu.vnua.department.service.excel.teaching.ReadTeachingWorker;
 import vn.edu.vnua.department.service.excel.teaching.StoreTeachingWorker;
 import vn.edu.vnua.department.service.excel.teaching.WriteErrorTeachingWorker;
 import vn.edu.vnua.department.service.excel.teaching.WriteTeachingWorker;
+import vn.edu.vnua.department.service.excel.user.ReadUserWorker;
+import vn.edu.vnua.department.service.excel.user.StoreUserWorker;
+import vn.edu.vnua.department.service.excel.user.WriteErrorUserWorker;
 import vn.edu.vnua.department.service.excel.user.WriteUserWorker;
 import vn.edu.vnua.department.service.firebase.FirebaseService;
 import vn.edu.vnua.department.subject.entity.Subject;
+import vn.edu.vnua.department.subject.model.SubjectExcelData;
 import vn.edu.vnua.department.subject.repository.SubjectRepository;
 import vn.edu.vnua.department.teaching.entity.Teaching;
 import vn.edu.vnua.department.teaching.model.TeachingExcelData;
 import vn.edu.vnua.department.teaching.repository.TeachingRepository;
 import vn.edu.vnua.department.user.entity.User;
+import vn.edu.vnua.department.user.model.UserExcelData;
 import vn.edu.vnua.department.user.repository.UserRepository;
 
 import java.io.FileOutputStream;
@@ -56,7 +75,24 @@ public class ExcelServiceImpl implements ExcelService {
     private final SubjectRepository subjectRepository;
     private final TeachingRepository teachingRepository;
     private final ExamRepository examRepository;
+    private final InternshipRepository internshipRepository;
+    private final DepartmentRepository departmentRepository;
+    private final PasswordEncoder encoder;
+    private final RoleRepository roleRepository;
+    private final ClassRepository classRepository;
+    private final FacultyRepository facultyRepository;
 
+    @Override
+    public List<User> readUserFromExcel(MultipartFile file) throws IOException, ExecutionException, InterruptedException {
+        List<String> userStrList = readUserData(file);
+        List<UserExcelData> userExcelDataList = storeUserData(userStrList);
+        if (!isContinue(userExcelDataList)) {
+            throw new RuntimeException(exportErrorUserList(userExcelDataList));
+        }
+        List<User> users = new ArrayList<>();
+        userExcelDataList.forEach(userExcelData -> users.add(userExcelData.getUser()));
+        return users;
+    }
 
     @Override
     public String writeUserToExcel(List<User> users) {
@@ -93,6 +129,18 @@ public class ExcelServiceImpl implements ExcelService {
         } catch (IOException e) {
             throw new RuntimeException("Đã có lỗi, không thể ghi file.");
         }
+    }
+
+    @Override
+    public List<AClass> readClassFromExcel(MultipartFile file) throws IOException, ExecutionException, InterruptedException {
+        List<String> classStrList = readClassData(file);
+        List<ClassExcelData> classExcelDataList = storeClassData(classStrList);
+        if (!isContinue(classExcelDataList)) {
+            throw new RuntimeException(exportErrorClassList(classExcelDataList));
+        }
+        List<AClass> classes = new ArrayList<>();
+        classExcelDataList.forEach(classExcelData -> classes.add(classExcelData.getAClass()));
+        return classes;
     }
 
     @Override
@@ -133,6 +181,18 @@ public class ExcelServiceImpl implements ExcelService {
     }
 
     @Override
+    public List<Subject> readSubjectFromExcel(MultipartFile file) throws IOException, ExecutionException, InterruptedException {
+        List<String> subjectStrList = readSubjectData(file);
+        List<SubjectExcelData> subjectExcelDataList = storeSubjectData(subjectStrList);
+        if (!isContinue(subjectExcelDataList)) {
+            throw  new RuntimeException(exportErrorSubjectList(subjectExcelDataList));
+        }
+        List<Subject> subjects = new ArrayList<>();
+        subjectExcelDataList.forEach(subjectExcelData -> subjects.add(subjectExcelData.getSubject()));
+        return subjects;
+    }
+
+    @Override
     public String writeSubjectToExcel(List<Subject> subjects) {
         try {
             Workbook workbook = new XSSFWorkbook();
@@ -170,19 +230,19 @@ public class ExcelServiceImpl implements ExcelService {
     }
 
     @Override
-    public List<Intern> readInternFromExcel(MultipartFile file) throws IOException, ExecutionException, InterruptedException {
+    public List<Internship> readInternFromExcel(MultipartFile file) throws IOException, ExecutionException, InterruptedException {
         List<String> internStrList = readInternData(file);
-        List<InternExcelData> internExcelDataList = storeInternData(internStrList);
+        List<InternshipExcelData> internExcelDataList = storeInternData(internStrList);
         if (!isContinue(internExcelDataList)) {
             throw new RuntimeException(exportErrorInternList(internExcelDataList));
         }
-        List<Intern> interns = new ArrayList<>();
+        List<Internship> interns = new ArrayList<>();
         internExcelDataList.forEach(internExcelData -> interns.add(internExcelData.getIntern()));
         return interns;
     }
 
     @Override
-    public String writeInternToExcel(List<Intern> interns) {
+    public String writeInternToExcel(List<Internship> interns) {
 
         try {
             Workbook workbook = new XSSFWorkbook();
@@ -193,7 +253,7 @@ public class ExcelServiceImpl implements ExcelService {
 
             // Sử dụng đa luồng
             int rowNum = 1;
-            for (Intern intern : interns) {
+            for (Internship intern : interns) {
                 Row row = sheet.createRow(rowNum++);
 
                 Callable<Void> callable = new WriteInternWorker(row, intern);
@@ -328,6 +388,275 @@ public class ExcelServiceImpl implements ExcelService {
         return true;
     }
 
+    private List<String> readUserData(MultipartFile file) throws IOException, ExecutionException, InterruptedException {
+        List<String> stringList = new CopyOnWriteArrayList<>();
+
+        Workbook workbook = new XSSFWorkbook(file.getInputStream());
+        Sheet sheet = workbook.getSheetAt(0);
+        int totalRows = sheet.getPhysicalNumberOfRows();
+
+        // Sử dụng đa luồng đọc dữ liệu từ excel, trả về List<String>
+        for (int i = 0; i < totalRows; i++) {
+            Row row = sheet.getRow(i);
+            if (i != 0) {
+                Callable<String> callable = new ReadUserWorker(row);
+                Future<String> future = executor.submit(callable);
+                stringList.add(future.get());
+            } else {
+                if (row == null || row.getCell(0) == null) {
+                    throw new RuntimeException("DATA_NOT_FOUND");
+                }
+            }
+        }
+
+        if (totalRows < 2) {
+            throw new RuntimeException("NO_DATA");
+        }
+
+        workbook.close();
+        return stringList;
+    }
+
+    private List<UserExcelData> storeUserData(List<String> userStrList) throws ExecutionException, InterruptedException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User createdBy = userRepository.getUserById(authentication.getPrincipal().toString());
+        Role role = roleRepository.findById(Constants.RoleIdConstant.LECTURER).orElseThrow(()->new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
+
+        List<UserExcelData> userExcelDataList = new CopyOnWriteArrayList<>();
+
+        for (int i = 0; i < userStrList.size(); i++) {
+            String userStr = userStrList.get(i);
+            Callable<UserExcelData> callable = new StoreUserWorker(encoder, userRepository, masterDataRepository, departmentRepository, role, createdBy,     userStr, i);
+            Future<UserExcelData> future = executor.submit(callable);
+            userExcelDataList.add(future.get());
+        }
+        return userExcelDataList;
+    }
+
+    private String exportErrorUserList(List<UserExcelData> userExcelDataList) {
+        try {
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("loi-import-nguoi-dung");
+
+            // Tạo hàng tiêu đề
+            createErrorUserHeader(sheet);
+
+            // Tạo style cho error cell
+            CellStyle cellStyle = workbook.createCellStyle();
+            cellStyle.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+            cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            cellStyle.setBorderBottom(BorderStyle.THIN);
+            cellStyle.setBorderLeft(BorderStyle.THIN);
+            cellStyle.setBorderRight(BorderStyle.THIN);
+            cellStyle.setBorderTop(BorderStyle.THIN);
+
+            // Sử dụng đa luồng in dữ liệu lỗi ra excel
+            for (UserExcelData userExcelData :
+                    userExcelDataList) {
+                Row row = sheet.createRow(userExcelData.getRowIndex() + 1);
+
+                Callable<Void> callable = new WriteErrorUserWorker(row, cellStyle, userExcelData);
+                Future<Void> future = executor.submit(callable);
+                try {
+                    future.get(); // Đợi và nhận giá trị null từ Callable
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            FileOutputStream fos = new FileOutputStream("loi-import-nguoi-dung.xlsx");
+            workbook.write(fos);
+
+            workbook.close();
+            fos.close();
+
+            //gọi hàm upload firebase
+            return firebaseService.uploadFileByName("loi-import-nguoi-dung.xlsx");
+
+        } catch (IOException e) {
+            throw new RuntimeException("Đã có lỗi, không thể ghi file.");
+        }
+    }
+
+    private List<String> readClassData(MultipartFile file) throws IOException, ExecutionException, InterruptedException {
+        List<String> stringList = new CopyOnWriteArrayList<>();
+
+        Workbook workbook = new XSSFWorkbook(file.getInputStream());
+        Sheet sheet = workbook.getSheetAt(0);
+        int totalRows = sheet.getPhysicalNumberOfRows();
+
+        // Sử dụng đa luồng đọc dữ liệu từ excel, trả về List<String>
+        for (int i = 0; i < totalRows; i++) {
+            Row row = sheet.getRow(i);
+            if (i != 0) {
+                Callable<String> callable = new ReadClassWorker(row);
+                Future<String> future = executor.submit(callable);
+                stringList.add(future.get());
+            } else {
+                if (row == null || row.getCell(0) == null) {
+                    throw new RuntimeException("DATA_NOT_FOUND");
+                }
+            }
+        }
+
+        if (totalRows < 2) {
+            throw new RuntimeException("NO_DATA");
+        }
+
+        workbook.close();
+        return stringList;
+    }
+
+    private List<ClassExcelData> storeClassData(List<String> classStrList) throws ExecutionException, InterruptedException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User createdBy = userRepository.getUserById(authentication.getPrincipal().toString());
+        Role role = roleRepository.findById(Constants.RoleIdConstant.LECTURER).orElseThrow(()->new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
+
+        List<ClassExcelData> classExcelDataList = new CopyOnWriteArrayList<>();
+
+        for (int i = 0; i < classStrList.size(); i++) {
+            String classStr = classStrList.get(i);
+            Callable<ClassExcelData> callable = new StoreClassWorker(facultyRepository, classRepository, createdBy, classStr, i);
+            Future<ClassExcelData> future = executor.submit(callable);
+            classExcelDataList.add(future.get());
+        }
+        return classExcelDataList;
+    }
+
+    private String exportErrorClassList(List<ClassExcelData> classExcelDataList) {
+        try {
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("loi-import-ds-lop");
+
+            // Tạo hàng tiêu đề
+            createErrorClassHeader(sheet);
+
+            // Tạo style cho error cell
+            CellStyle cellStyle = workbook.createCellStyle();
+            cellStyle.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+            cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            cellStyle.setBorderBottom(BorderStyle.THIN);
+            cellStyle.setBorderLeft(BorderStyle.THIN);
+            cellStyle.setBorderRight(BorderStyle.THIN);
+            cellStyle.setBorderTop(BorderStyle.THIN);
+
+            // Sử dụng đa luồng in dữ liệu lỗi ra excel
+            for (ClassExcelData classExcelData :
+                    classExcelDataList) {
+                Row row = sheet.createRow(classExcelData.getRowIndex() + 1);
+
+                Callable<Void> callable = new WriteErrorClassWorker(row, cellStyle, classExcelData);
+                Future<Void> future = executor.submit(callable);
+                try {
+                    future.get(); // Đợi và nhận giá trị null từ Callable
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            FileOutputStream fos = new FileOutputStream("loi-import-ds-lop.xlsx");
+            workbook.write(fos);
+
+            workbook.close();
+            fos.close();
+
+            //gọi hàm upload firebase
+            return firebaseService.uploadFileByName("loi-import-ds-lop.xlsx");
+
+        } catch (IOException e) {
+            throw new RuntimeException("Đã có lỗi, không thể ghi file.");
+        }
+    }
+
+    private List<String> readSubjectData(MultipartFile file) throws IOException, ExecutionException, InterruptedException {
+        List<String> stringList = new CopyOnWriteArrayList<>();
+
+        Workbook workbook = new XSSFWorkbook(file.getInputStream());
+        Sheet sheet = workbook.getSheetAt(0);
+        int totalRows = sheet.getPhysicalNumberOfRows();
+
+        // Sử dụng đa luồng đọc dữ liệu từ excel, trả về List<String>
+        for (int i = 0; i < totalRows; i++) {
+            Row row = sheet.getRow(i);
+            if (i != 0) {
+                Callable<String> callable = new ReadSubjectWorker(row);
+                Future<String> future = executor.submit(callable);
+                stringList.add(future.get());
+            } else {
+                if (row == null || row.getCell(0) == null) {
+                    throw new RuntimeException("DATA_NOT_FOUND");
+                }
+            }
+        }
+
+        if (totalRows < 2) {
+            throw new RuntimeException("NO_DATA");
+        }
+
+        workbook.close();
+        return stringList;
+    }
+
+    private List<SubjectExcelData> storeSubjectData(List<String> subjectStrList) throws ExecutionException, InterruptedException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User createdBy = userRepository.getUserById(authentication.getPrincipal().toString());
+
+        List<SubjectExcelData> subjectExcelDataList = new CopyOnWriteArrayList<>();
+
+        for (int i = 0; i < subjectStrList.size(); i++) {
+            String subjectStr = subjectStrList.get(i);
+            Callable<SubjectExcelData> callable = new StoreSubjectWorker(departmentRepository, subjectRepository, createdBy, subjectStr, i);
+            Future<SubjectExcelData> future = executor.submit(callable);
+            subjectExcelDataList.add(future.get());
+        }
+        return subjectExcelDataList;
+    }
+
+    private String exportErrorSubjectList(List<SubjectExcelData> subjectExcelDataList) {
+        try {
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("loi-import-ds-mon-hoc");
+
+            // Tạo hàng tiêu đề
+            createErrorSubjectHeader(sheet);
+
+            // Tạo style cho error cell
+            CellStyle cellStyle = workbook.createCellStyle();
+            cellStyle.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+            cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            cellStyle.setBorderBottom(BorderStyle.THIN);
+            cellStyle.setBorderLeft(BorderStyle.THIN);
+            cellStyle.setBorderRight(BorderStyle.THIN);
+            cellStyle.setBorderTop(BorderStyle.THIN);
+
+            // Sử dụng đa luồng in dữ liệu lỗi ra excel
+            for (SubjectExcelData subjectExcelData :
+                    subjectExcelDataList) {
+                Row row = sheet.createRow(subjectExcelData.getRowIndex() + 1);
+
+                Callable<Void> callable = new WriteErrorSubjectWorker(row, cellStyle, subjectExcelData);
+                Future<Void> future = executor.submit(callable);
+                try {
+                    future.get(); // Đợi và nhận giá trị null từ Callable
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            FileOutputStream fos = new FileOutputStream("loi-import-ds-mon-hoc.xlsx");
+            workbook.write(fos);
+
+            workbook.close();
+            fos.close();
+
+            //gọi hàm upload firebase
+            return firebaseService.uploadFileByName("loi-import-ds-mon-hoc.xlsx");
+
+        } catch (IOException e) {
+            throw new RuntimeException("Đã có lỗi, không thể ghi file.");
+        }
+    }
+
     private List<String> readInternData(MultipartFile file) throws IOException, ExecutionException, InterruptedException {
         List<String> stringList = new CopyOnWriteArrayList<>();
 
@@ -350,26 +679,29 @@ public class ExcelServiceImpl implements ExcelService {
         }
 
         if (totalRows < 2) {
-            throw new RuntimeException(Constants.ExcelConstant.NO_DATA);
+            throw new RuntimeException("NO_DATA");
         }
 
         workbook.close();
         return stringList;
     }
 
-    private List<InternExcelData> storeInternData(List<String> internStrList) throws ExecutionException, InterruptedException {
-        List<InternExcelData> internExcelDataList = new CopyOnWriteArrayList<>();
+    private List<InternshipExcelData> storeInternData(List<String> internStrList) throws ExecutionException, InterruptedException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User createdBy = userRepository.getUserById(authentication.getPrincipal().toString());
+
+        List<InternshipExcelData> internExcelDataList = new CopyOnWriteArrayList<>();
 
         for (int i = 0; i < internStrList.size(); i++) {
-            String teachingStr = internStrList.get(i);
-            Callable<InternExcelData> callable = new StoreInternWorker(masterDataRepository, userRepository, teachingStr, i);
-            Future<InternExcelData> future = executor.submit(callable);
+            String internStr = internStrList.get(i);
+            Callable<InternshipExcelData> callable = new StoreInternWorker(masterDataRepository, userRepository, internshipRepository, createdBy, internStr, i);
+            Future<InternshipExcelData> future = executor.submit(callable);
             internExcelDataList.add(future.get());
         }
         return internExcelDataList;
     }
 
-    private String exportErrorInternList(List<InternExcelData> internExcelDataList) {
+    private String exportErrorInternList(List<InternshipExcelData> internExcelDataList) {
         try {
             Workbook workbook = new XSSFWorkbook();
             Sheet sheet = workbook.createSheet("loi-import-de-tai-thuc-tap");
@@ -387,7 +719,7 @@ public class ExcelServiceImpl implements ExcelService {
             cellStyle.setBorderTop(BorderStyle.THIN);
 
             // Sử dụng đa luồng in dữ liệu lỗi ra excel
-            for (InternExcelData internExcelData :
+            for (InternshipExcelData internExcelData :
                     internExcelDataList) {
                 Row row = sheet.createRow(internExcelData.getRowIndex() + 1);
 
@@ -436,7 +768,7 @@ public class ExcelServiceImpl implements ExcelService {
         }
 
         if (totalRows < 2) {
-            throw new RuntimeException(Constants.ExcelConstant.NO_DATA);
+            throw new RuntimeException("NO_DATA");
         }
 
         workbook.close();
@@ -526,7 +858,7 @@ public class ExcelServiceImpl implements ExcelService {
         }
 
         if (totalRows < 2) {
-            throw new RuntimeException(Constants.ExcelConstant.NO_DATA);
+            throw new RuntimeException("NO_DATA");
         }
 
         workbook.close();
@@ -594,6 +926,18 @@ public class ExcelServiceImpl implements ExcelService {
         }
     }
 
+    private void createErrorUserHeader(Sheet sheet) {
+        Row headerRow = sheet.createRow(0);
+        headerRow.createCell(0).setCellValue("Mã người dùng");
+        headerRow.createCell(1).setCellValue("Họ đệm");
+        headerRow.createCell(2).setCellValue("Tên");
+        headerRow.createCell(3).setCellValue("Trình độ");
+        headerRow.createCell(4).setCellValue("Email");
+        headerRow.createCell(5).setCellValue("SĐT");
+        headerRow.createCell(6).setCellValue("Bộ môn");
+        headerRow.createCell(7).setCellValue("Ghi chú");
+    }
+
     private void createUserListHeader(Sheet sheet) {
         Row headerRow = sheet.createRow(0);
         headerRow.createCell(0).setCellValue("Mã người dùng");
@@ -608,6 +952,18 @@ public class ExcelServiceImpl implements ExcelService {
         headerRow.createCell(9).setCellValue("Ghi chú");
     }
 
+    private void createErrorClassHeader(Sheet sheet) {
+        Row headerRow = sheet.createRow(0);
+        headerRow.createCell(0).setCellValue("Mã lớp");
+        headerRow.createCell(1).setCellValue("Tên lớp");
+        headerRow.createCell(2).setCellValue("Khoa");
+        headerRow.createCell(3).setCellValue("GVCN");
+        headerRow.createCell(4).setCellValue("Lớp trưởng");
+        headerRow.createCell(5).setCellValue("SĐT lớp trưởng");
+        headerRow.createCell(6).setCellValue("Email lớp trưởng");
+        headerRow.createCell(7).setCellValue("Ghi chú");
+    }
+
     private void createClassListHeader(Sheet sheet) {
         Row headerRow = sheet.createRow(0);
         headerRow.createCell(0).setCellValue("Mã lớp");
@@ -618,6 +974,15 @@ public class ExcelServiceImpl implements ExcelService {
         headerRow.createCell(5).setCellValue("Sđt lớp trưởng");
         headerRow.createCell(6).setCellValue("Email lớp trưởng");
         headerRow.createCell(7).setCellValue("Ghi chú");
+    }
+
+    private void createErrorSubjectHeader(Sheet sheet) {
+        Row headerRow = sheet.createRow(0);
+        headerRow.createCell(0).setCellValue("Mã môn học");
+        headerRow.createCell(1).setCellValue("Tên môn học");
+        headerRow.createCell(2).setCellValue("Bộ môn");
+        headerRow.createCell(3).setCellValue("Số tín chỉ");
+        headerRow.createCell(4).setCellValue("Ghi chú");
     }
 
     private void createSubjectListHeader(Sheet sheet) {
@@ -637,7 +1002,12 @@ public class ExcelServiceImpl implements ExcelService {
         headerRow.createCell(2).setCellValue("Tên đề tài");
         headerRow.createCell(3).setCellValue("Loại đề tài");
         headerRow.createCell(4).setCellValue("Mã GVHD");
-        headerRow.createCell(5).setCellValue("Ghi chú");
+        headerRow.createCell(5).setCellValue("Tên SV");
+        headerRow.createCell(6).setCellValue("Mã SV");
+        headerRow.createCell(7).setCellValue("Lớp");
+        headerRow.createCell(8).setCellValue("SĐT");
+        headerRow.createCell(9).setCellValue("Cơ sở TT");
+        headerRow.createCell(10).setCellValue("Ghi chú");
     }
 
     private void createInternListHeader(Sheet sheet) {
@@ -646,11 +1016,16 @@ public class ExcelServiceImpl implements ExcelService {
         headerRow.createCell(1).setCellValue("Học kỳ");
         headerRow.createCell(2).setCellValue("Khoa");
         headerRow.createCell(3).setCellValue("Bộ môn");
-        headerRow.createCell(4).setCellValue("GV hướng dẫn");
-        headerRow.createCell(5).setCellValue("Đề tài thực tập");
-        headerRow.createCell(6).setCellValue("Loại đề tài");
-        headerRow.createCell(7).setCellValue("Trạng thái");
-        headerRow.createCell(8).setCellValue("Ghi chú");
+        headerRow.createCell(4).setCellValue("Mã SV");
+        headerRow.createCell(5).setCellValue("Tên SV");
+        headerRow.createCell(6).setCellValue("Mã lớp");
+        headerRow.createCell(7).setCellValue("SĐT");
+        headerRow.createCell(8).setCellValue("Cơ sở TT");
+        headerRow.createCell(9).setCellValue("GV hướng dẫn");
+        headerRow.createCell(10).setCellValue("Tên đề tài");
+        headerRow.createCell(11).setCellValue("Loại đề tài");
+        headerRow.createCell(12).setCellValue("Trạng thái");
+        headerRow.createCell(13).setCellValue("Ghi chú");
     }
 
     private void createErrorTeachingHeader(Sheet sheet) {

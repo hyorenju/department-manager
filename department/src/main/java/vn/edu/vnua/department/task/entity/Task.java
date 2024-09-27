@@ -13,6 +13,7 @@ import vn.edu.vnua.department.userjointask.entity.UserTask;
 
 import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -44,9 +45,13 @@ public class Task {
     private Integer ordinalNumber;
 
     @ManyToOne
+    @JoinColumn(name = "task_status")
+    private MasterData taskStatus;
+
+    @ManyToOne
     @JoinColumn(name = "project_id")
     private Project project;
 
-    @OneToMany(mappedBy = "task")
-    private Collection<UserTask> userJoined;
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserTask> userJoined;
 }

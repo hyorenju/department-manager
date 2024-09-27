@@ -38,7 +38,8 @@ public class FacultyServiceImpl implements FacultyService {
 
     @Override
     public Faculty createFaculty(CreateFacultyRequest request) {
-        if (facultyRepository.existsById(request.getId())) {
+        if (facultyRepository.existsById(request.getId()) ||
+        facultyRepository.existsByName(request.getName())) {
             throw new RuntimeException(Constants.FacultyConstant.FACULTY_EXISTED);
         }
 

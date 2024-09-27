@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.modelmapper.internal.bytebuddy.implementation.bytecode.Throw;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
@@ -14,9 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import vn.edu.vnua.department.common.Constants;
-import vn.edu.vnua.department.intern.entity.Intern;
-import vn.edu.vnua.department.intern.repository.CustomInternRepository;
-import vn.edu.vnua.department.intern.request.LockInternListRequest;
 import vn.edu.vnua.department.masterdata.entity.MasterData;
 import vn.edu.vnua.department.masterdata.repository.MasterDataRepository;
 import vn.edu.vnua.department.service.excel.ExcelService;
@@ -34,7 +30,6 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -97,8 +92,8 @@ public class TeachingServiceImpl implements TeachingService {
 
         String status;
         if (StringUtils.hasText(request.getComponentFile()) && StringUtils.hasText(request.getSummaryFile())) {
-            status = Constants.StatusConstant.COMPLETED;
-        } else status = Constants.StatusConstant.INCOMPLETE;
+            status = Constants.UploadFileStatusConstant.COMPLETED;
+        } else status = Constants.UploadFileStatusConstant.INCOMPLETE;
 
         return teachingRepository.saveAndFlush(Teaching.builder()
                 .subject(subject)
@@ -141,8 +136,8 @@ public class TeachingServiceImpl implements TeachingService {
         }
 
         if (teaching.getComponentFile() != null && teaching.getSummaryFile() != null) {
-            teaching.setStatus(Constants.StatusConstant.COMPLETED);
-        } else teaching.setStatus(Constants.StatusConstant.INCOMPLETE);
+            teaching.setStatus(Constants.UploadFileStatusConstant.COMPLETED);
+        } else teaching.setStatus(Constants.UploadFileStatusConstant.INCOMPLETE);
 
         return teachingRepository.saveAndFlush(teaching);
     }
@@ -290,7 +285,7 @@ public class TeachingServiceImpl implements TeachingService {
                         .term(term)
                         .createdAt(Timestamp.valueOf(LocalDateTime.now()))
                         .createdBy(createdBy)
-                        .status(Constants.StatusConstant.INCOMPLETE)
+                        .status(Constants.UploadFileStatusConstant.INCOMPLETE)
                         .build();
 
                 teachingList.add(teaching);

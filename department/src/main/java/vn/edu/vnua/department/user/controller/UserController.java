@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import vn.edu.vnua.department.controller.BaseController;
@@ -16,6 +15,7 @@ import vn.edu.vnua.department.user.service.UserService;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequiredArgsConstructor
@@ -43,15 +43,14 @@ public class UserController extends BaseController {
     }
 
     @PostMapping("pick")
-    public ResponseEntity<?> getUsersPicked() {
-        List<UserDTO> response = userService.getUserPicked().stream().map(
+    public ResponseEntity<?> getUsersOption() {
+        List<UserDTO> response = userService.getUserOption().stream().map(
                 user -> modelMapper.map(user, UserDTO.class)
         ).toList();
         return buildListItemResponse(response, response.size());
     }
 
     @PostMapping("create")
-//    @PreAuthorize("hasAnyAuthority('PRINCIPAL', 'DEAN', 'MANAGER', 'DEPUTY')")
     public ResponseEntity<?> createUser(@Valid @RequestBody CreateUserRequest request) {
         UserDTO response = modelMapper.map(userService.createUser(request), UserDTO.class);
         return buildItemResponse(response);
@@ -92,6 +91,14 @@ public class UserController extends BaseController {
         return buildItemResponse(response);
     }
 
+    @PostMapping("import")
+    public ResponseEntity<?> importUserList(MultipartFile file) throws IOException, ExecutionException, InterruptedException {
+        List<UserDTO> response = userService.importFromExcel(file).stream().map(
+                user -> modelMapper.map(user, UserDTO.class)
+        ).toList();
+        return buildListItemResponse(response, response.size());
+    }
+
     @PostMapping("export")
     public ResponseEntity<?> exportUserList(@RequestBody @Valid ExportUserListRequest request) {
         String response = userService.exportToExcel(request);
@@ -112,12 +119,12 @@ public class UserController extends BaseController {
 
 
     //Dưới đây là api để khởi tạo superadmin bằng postman, front-end dev vui lòng không đưa vào giao diện dưới mọi hình thức
-    @PostMapping("create-principal/{id}")
-    public ResponseEntity<?> createPrincipal(@PathVariable String id) {
-        UserDTO response = modelMapper.map(userService.createPrincipal(id), UserDTO.class);
+    @PostMapping("create-admin/{id}")
+    public ResponseEntity<?> createAdmin(@PathVariable String id) {
+        UserDTO response = modelMapper.map(userService.createAdmin(id), UserDTO.class);
         return buildItemResponse(response);
     }
-    @PostMapping("dev-create")
+    @PostMapping("dev-creating")
     public ResponseEntity<?> devCreateUser(@Valid @RequestBody CreateUserRequest request) {
         UserDTO response = modelMapper.map(userService.devCreateUser(request), UserDTO.class);
         return buildItemResponse(response);

@@ -86,7 +86,7 @@ public class Exam {
     private MasterData form;
 
     @Column(name = "exam_code")
-    private Integer examCode;
+    private String examCode;
 
     @ManyToOne
     @JoinColumn(name = "picker")
@@ -141,9 +141,6 @@ public class Exam {
         }
         if (!ImportExamValidator.validateNaturalNum(quantity)) {
             errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(10).errorMsg("Slg không hợp lệ").build());
-        }
-        if (!ImportExamValidator.validateNaturalNum(examCode)) {
-            errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(12).errorMsg("Mã đề thi không hợp lệ").build());
         }
         if (!ImportExamValidator.validateNaturalNum(lessonStart)) {
             errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(4).errorMsg("TBĐ không hợp lệ").build());

@@ -11,7 +11,7 @@ import vn.edu.vnua.department.userjointask.entity.UserTask;
 import vn.edu.vnua.department.userjointask.entity.UserTaskDTO;
 import vn.edu.vnua.department.userjointask.request.GetUserTaskListRequest;
 import vn.edu.vnua.department.userjointask.request.GetUserTaskPageRequest;
-import vn.edu.vnua.department.userjointask.request.UpdateTaskStatusRequest;
+import vn.edu.vnua.department.userjointask.request.UpdatePersonalStatusRequest;
 import vn.edu.vnua.department.userjointask.request.UpdateUserTaskRequest;
 import vn.edu.vnua.department.userjointask.service.UserTaskService;
 
@@ -50,8 +50,8 @@ public class UserTaskController extends BaseController {
     }
 
     @PostMapping("status/{id}")
-    private ResponseEntity<?> updateTaskStatus(@PathVariable Long id, @RequestBody @Valid UpdateTaskStatusRequest request){
-        UserTaskDTO response = modelMapper.map(userTaskService.updateTaskStatus(request, id), UserTaskDTO.class);
+    private ResponseEntity<?> updatePersonalStatus(@PathVariable Long id, @RequestBody @Valid UpdatePersonalStatusRequest request){
+        UserTaskDTO response = modelMapper.map(userTaskService.updatePersonalStatus(request, id), UserTaskDTO.class);
         return buildItemResponse(response);
     }
 

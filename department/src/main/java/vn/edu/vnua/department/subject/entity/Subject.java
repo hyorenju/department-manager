@@ -5,14 +5,20 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.util.StringUtils;
 import vn.edu.vnua.department.department.entity.Department;
+import vn.edu.vnua.department.domain.validation.ImportSubjectValidator;
+import vn.edu.vnua.department.domain.validation.ImportSubjectValidator;
 import vn.edu.vnua.department.exam.entity.Exam;
+import vn.edu.vnua.department.model.excel.ExcelData;
 import vn.edu.vnua.department.student.entity.Student;
+import vn.edu.vnua.department.subject.model.SubjectExcelData;
 import vn.edu.vnua.department.teaching.entity.Teaching;
 import vn.edu.vnua.department.user.entity.User;
 
 import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -57,6 +63,19 @@ public class Subject {
 
     @Column
     private String note;
+
+    public List<SubjectExcelData.ErrorDetail> validateInformationDetailError(List<SubjectExcelData.ErrorDetail> errorDetailList){
+        if(!ImportSubjectValidator.validateSubjectId(id)) {
+            errorDetailList.add(SubjectExcelData.ErrorDetail.builder().columnIndex(0).errorMsg("Mã môn học chỉ được chứa ký tự chữ và số").build());
+        }
+        if(!ImportSubjectValidator.validateSubjectName(name)) {
+            errorDetailList.add(SubjectExcelData.ErrorDetail.builder().columnIndex(1).errorMsg("Tên môn học không được chứa ký tự đặc biệt").build());
+        }
+        if(!ImportSubjectValidator.validateSubjectCredits(credits)) {
+            errorDetailList.add(SubjectExcelData.ErrorDetail.builder().columnIndex(3).errorMsg("Số TC không hợp lệ").build());
+        }
+        return errorDetailList;
+    }
 
     @OneToMany(mappedBy = "subject")
     private Collection<Teaching> teachingAssignments;

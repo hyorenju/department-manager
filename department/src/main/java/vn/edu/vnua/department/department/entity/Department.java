@@ -22,7 +22,7 @@ public class Department {
     @Column(length = 100)
     private String id;
 
-    @Column(length = 200)
+    @Column(length = 200, unique = true)
     private String name;
 
     @ManyToOne

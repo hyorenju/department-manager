@@ -11,4 +11,6 @@ import java.util.List;
 @Repository
 public interface DepartmentRepository extends JpaRepository<Department, String>, JpaSpecificationExecutor<Department> {
     List<Department> findAllByFacultyId(String facultyId, Sort sort);
+    boolean existsByName(String name);
+    Department findByName(String name);
 }

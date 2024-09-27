@@ -3,6 +3,7 @@ package vn.edu.vnua.department.project.entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import vn.edu.vnua.department.common.Constants;
+import vn.edu.vnua.department.masterdata.entity.MasterDataDTO;
 import vn.edu.vnua.department.user.entity.UserBasicDTO;
 
 import java.sql.Timestamp;
@@ -19,4 +20,5 @@ public class ProjectDTO {
     private Timestamp start;
     @JsonFormat(pattern = Constants.DateTimeConstants.DATE_FORMAT, timezone = Constants.DateTimeConstants.TIME_ZONE)
     private Timestamp deadline;
+    private MasterDataDTO projectStatus;
 }

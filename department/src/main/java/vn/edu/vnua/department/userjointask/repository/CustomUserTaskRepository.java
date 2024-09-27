@@ -36,7 +36,7 @@ public class CustomUserTaskRepository {
                 predicates.add(criteriaBuilder.between(root.get("task").get("deadline"), startTimestamp, endTimestamp));
             }
             if(request.getIsSchedule()){
-                predicates.add(criteriaBuilder.like(root.get("taskStatus").get("name"), Constants.MasterDataNameConstant.DOING));
+                predicates.add(criteriaBuilder.like(root.get("personalStatus").get("name"), Constants.MasterDataNameConstant.DOING));
             }
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         });
@@ -64,12 +64,12 @@ public class CustomUserTaskRepository {
             if (StringUtils.hasText(request.getUserId())) {
                 predicates.add(criteriaBuilder.like(root.get("user").get("id"), request.getUserId()));
                 if (request.getIsPrivate()) {
-                    predicates.add(criteriaBuilder.like(root.get("taskStatus").get("name"), Constants.MasterDataNameConstant.DOING));
-                    predicates.add(criteriaBuilder.like(root.get("taskStatus").get("name"), Constants.MasterDataNameConstant.DOING_LATE));
+                    predicates.add(criteriaBuilder.like(root.get("personalStatus").get("name"), Constants.MasterDataNameConstant.DOING));
+                    predicates.add(criteriaBuilder.like(root.get("personalStatus").get("name"), Constants.MasterDataNameConstant.DOING_LATE));
                 } else if (!request.getIsPrivate()){
-                    predicates.add(criteriaBuilder.like(root.get("taskStatus").get("name"), Constants.MasterDataNameConstant.FINISHED_SOONER));
-                    predicates.add(criteriaBuilder.like(root.get("taskStatus").get("name"), Constants.MasterDataNameConstant.FINISHED_ON_TIME));
-                    predicates.add(criteriaBuilder.like(root.get("taskStatus").get("name"), Constants.MasterDataNameConstant.FINISHED_LATE));
+                    predicates.add(criteriaBuilder.like(root.get("personalStatus").get("name"), Constants.MasterDataNameConstant.FINISHED_SOONER));
+                    predicates.add(criteriaBuilder.like(root.get("personalStatus").get("name"), Constants.MasterDataNameConstant.FINISHED_ON_TIME));
+                    predicates.add(criteriaBuilder.like(root.get("personalStatus").get("name"), Constants.MasterDataNameConstant.FINISHED_LATE));
                 }
             }
             query.orderBy(

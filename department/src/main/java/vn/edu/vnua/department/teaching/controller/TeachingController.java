@@ -72,7 +72,7 @@ public class TeachingController extends BaseController {
         List<TeachingDTO> response = teachingService.importFromExcel(file).stream().map(
                 teaching -> modelMapper.map(teaching, TeachingDTO.class)
         ).toList();
-        return buildItemResponse(response);
+        return buildListItemResponse(response, response.size());
     }
 
     @PostMapping("export")
@@ -86,6 +86,6 @@ public class TeachingController extends BaseController {
         List<TeachingDTO> response = teachingService.readFromDaoTao(teacherId).stream().map(
                 teaching -> modelMapper.map(teaching, TeachingDTO.class)
         ).toList();
-        return buildItemResponse(response);
+        return buildListItemResponse(response, response.size());
     }
 }

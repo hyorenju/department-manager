@@ -24,7 +24,7 @@ public class WriteExamWorker implements Callable<Void> {
         row.createCell(4).setCellValue(exam.getSubject().getId());
         row.createCell(5).setCellValue(exam.getSubject().getName() != null ? exam.getSubject().getName() : "");
         row.createCell(6).setCellValue(exam.getForm().getName() != null ? exam.getForm().getName() : "");
-        row.createCell(7).setCellValue(exam.getExamCode() != null ? exam.getExamCode().toString() : "");
+        row.createCell(7).setCellValue(exam.getExamCode() != null ? exam.getExamCode() : "");
         row.createCell(8).setCellValue(exam.getTestDay() != null ? MyUtils.convertTimestampToString(exam.getTestDay()) : "");
         row.createCell(9).setCellValue(exam.getTestRoom() != null ? exam.getTestRoom() : "");
         row.createCell(10).setCellValue(exam.getLessonStart() != null ? exam.getLessonStart().toString() : "");

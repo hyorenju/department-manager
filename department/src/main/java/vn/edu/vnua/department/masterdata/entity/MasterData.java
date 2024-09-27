@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import vn.edu.vnua.department.exam.entity.Exam;
 import vn.edu.vnua.department.intern.entity.Intern;
+import vn.edu.vnua.department.project.entity.Project;
+import vn.edu.vnua.department.task.entity.Task;
 import vn.edu.vnua.department.teaching.entity.Teaching;
 import vn.edu.vnua.department.user.entity.User;
 import vn.edu.vnua.department.userjointask.entity.UserTask;
@@ -48,6 +50,12 @@ public class MasterData {
     @OneToMany(mappedBy = "degree")
     private Collection<User> userDegrees;
 
+    @OneToMany(mappedBy = "personalStatus")
+    private Collection<UserTask> personalStatuses;
+
     @OneToMany(mappedBy = "taskStatus")
-    private Collection<UserTask> taskStatus;
+    private Collection<Task> taskStatuses;
+
+    @OneToMany(mappedBy = "projectStatus")
+    private Collection<Project> projectStatuses;
 }

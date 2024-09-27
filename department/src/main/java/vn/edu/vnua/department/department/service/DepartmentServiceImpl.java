@@ -49,7 +49,8 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public Department createDepartment(CreateDepartmentRequest request) {
-        if (departmentRepository.existsById(request.getId())) {
+        if (departmentRepository.existsById(request.getId()) ||
+                departmentRepository.existsByName(request.getName())) {
             throw new RuntimeException(Constants.DepartmentConstant.DEPARTMENT_EXISTED);
         }
 

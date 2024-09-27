@@ -2,7 +2,7 @@ package vn.edu.vnua.department.common;
 
 public interface Constants {
     interface RoleIdConstant {
-        String PRINCIPAL = "PRINCIPAL";
+        String ADMIN = "ADMIN";
         String DEAN = "DEAN";
         String MANAGER = "MANAGER";
         String DEPUTY = "DEPUTY";
@@ -53,6 +53,11 @@ public interface Constants {
         String CANNOT_MANAGE_ANOTHER_DEPARTMENT = "Bạn không thể thêm, sửa giảng viên bộ môn khác";
         String CANNOT_MANAGE_ANOTHER_FACULTY = "Bạn không thể thêm, sửa giảng viên bộ khoa khác";
         String CANNOT_MANAGE_SUPERIOR = "Bạn không thể cập nhật người dùng có chức vụ cao hơn mình";
+        String DEFAULT_PASSWORD = "123";
+        String ID_REGEX = "^[\\p{L}\\d]*$";
+        String NAME_REGEX = "^[\\p{L}\\s]*$";
+        String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@gmail(.+)$";
+        String PHONE_NUMBER_REGEX = "^(0?)(3[2-9]|5[6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])[0-9]{7}$";
     }
 
     interface AuthenticationConstant {
@@ -91,9 +96,16 @@ public interface Constants {
         String INTERN_NOT_FOUND = "Không tìm thấy đề tài thực tập";
         String CANNOT_UPDATE = "Bạn chỉ có thể sửa, xóa nếu bạn là giáo viên hướng dẫn của đề tài này";
         String NAME_IS_EXISTED = "Tên đề tài đã tồn tại";
-        String INTERN_NAME_REGEX = "^[\\p{L}\\d\\s.,;…]*$";
+        String INTERN_NAME_REGEX = "^[\\p{L}\\d\\s.,;…\\-\"()\\[\\]{}&]*$";
         String CANNOT_LOCK = "Bạn không có quyền lock đề tài";
         String LIST_EMPTY = "Không tìm thấy dữ liệu theo điều kiện";
+    }
+
+    interface InternshipConstant{
+        String INTERNSHIP_EXISTED = "Những thông tin của bản ghi này đang bị trùng với một bản ghi đã tồn tại";
+        String INTERNSHIP_NOT_FOUND = "Không tìm thấy bản ghi đề tài thực tập";
+        String CANNOT_UPDATE = "Bạn chỉ có thể sửa, xóa nếu bạn là giáo viên hướng dẫn của đề tài này";
+        String TOPIC_NAME_REGEX = "^[\\p{L}\\d\\s.,;…\\-\"()\\[\\]{}&]*$";
     }
 
     interface StudentConstant {
@@ -109,29 +121,31 @@ public interface Constants {
         String CLASS_NOT_FOUND = "Không tìm thấy lớp";
         String CLASS_EXISTED = "Mã lớp đã tồn tại";
         String CANNOT_DELETE = "Lớp này đang ràng buộc với những bản ghi khác, không thể xóa";
+        String ID_REGEX = "^[\\p{L}\\d]*$";
     }
 
     interface SubjectConstant{
         String SUBJECT_NOT_FOUND = "Không tìm thấy môn học";
         String SUBJECT_EXISTED = "Mã môn học đã tồn tại";
+        String SUBJECT_NAME_REGEX = "^[\\p{L}\\d\\s.,;…\\-\"()\\[\\]{}&]*$";
+        String ID_REGEX = "^[\\p{L}\\d]*$";
     }
 
-    interface StatusConstant{
+    interface UploadFileStatusConstant {
         String INCOMPLETE = "Chưa hoàn thiện";
         String COMPLETED = "Đã hoàn thiện";
     }
 
     interface TeachingConstant{
-        String TEACHING_NOT_FOUND = "Không tìm thấy phân công giảng dạy";
-        String TEACHING_IS_EXISTED = "Phân công này đã tồn tại";
-        String CANNOT_UPDATE = "Bạn không thể thêm, sửa, xóa phân công giảng dạy của giảng viên khác";
-        String DAOTAO_NOT_FOUND = "Không có thông tin giảng dạy của người dùng %s - %s %s trong %s";
+        String TEACHING_NOT_FOUND = "Không tìm thấy bản ghi giảng dạy";
+        String TEACHING_IS_EXISTED = "Bản ghi giảng dạy này đã tồn tại";
+        String CANNOT_UPDATE = "Bạn không thể thêm, sửa, xóa bản ghi giảng dạy của giảng viên khác";
     }
 
     interface ExamConstant{
-        String EXAM_NOT_FOUND = "Không tìm thấy phân công kỳ thi";
+        String EXAM_NOT_FOUND = "Không tìm thấy bản ghi lịch thi";
         String PROCTORS_NOT_BE_SAME = "Hai giám thị không được trùng nhau";
-        String EXAM_IS_EXISTED = "Phân công này đã tồn tại, vui lòng kiểm tra lại";
+        String EXAM_IS_EXISTED = "Lịch thi này đã tồn tại, vui lòng kiểm tra lại";
     }
 
     interface ThreadsNumConstant{
@@ -144,7 +158,6 @@ public interface Constants {
 
     interface ExcelConstant{
         String DATA_NOT_FOUND = "Không tìm thấy dữ liệu. Hãy chắc chắn rằng file excel được nhập từ ô A1";
-        String NO_DATA = "Tệp excel không có dữ liệu";
     }
 
     interface PasswordConstant{
@@ -158,15 +171,15 @@ public interface Constants {
     interface ProjectConstant {
         String PROJECT_NOT_FOUND = "Không tìm thấy dự án";
         String CANNOT_UPDATE = "Chỉ người tạo dự án mới có thể chỉnh sửa";
-        String DATE_BETWEEN_PROBLEM = "Ngày bắt đầu không được sau hạn chót";
+        String DATE_BETWEEN_PROBLEM = "Ngày bắt đầu không được sau ngày kết thúc";
         String START_INVALID = "Ngày bắt đầu không hợp lệ";
-        String DEADLINE_INVALID = "Hạn chót không hợp lệ";
+        String DEADLINE_INVALID = "Ngày kết thúc không hợp lệ";
     }
 
     interface TaskConstant {
         String CANNOT_UPDATE = "Chỉ người tạo dự án mới có thể chỉnh sửa công việc";
         String TASK_NOT_FOUND = "Không tìm thấy công việc";
-        String DATE_BETWEEN_PROBLEM = "Ngày bắt đầu không được sau hạn chót";
+        String DATE_BETWEEN_PROBLEM = "Ngày bắt đầu không được sau ngày kết thúc";
         String START_PROBLEM = "Ngày bắt đầu không được trước ngày %s và sau ngày %s";
         String DEADLINE_PROBLEM = "Hạn chót không được trước ngày %s và sau ngày %s";
     }
