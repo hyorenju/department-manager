@@ -32,6 +32,14 @@ public class UserTaskController extends BaseController {
         return buildListItemResponse(response, response.size());
     }
 
+    @PostMapping("calendar")
+    private ResponseEntity<?> getUserTaskCalendar(@RequestBody @Valid GetUserTaskListRequest request){
+        List<UserTaskDTO> response = userTaskService.getUserTaskCalendar(request).stream().map(
+                userTask -> modelMapper.map(userTask, UserTaskDTO.class)
+        ).toList();
+        return buildListItemResponse(response, response.size());
+    }
+
     @PostMapping("page")
     public ResponseEntity<?> getUserTaskPage(@RequestBody @Valid GetUserTaskPageRequest request) {
         Page<UserTask> page = userTaskService.getUserTaskPage(request);
@@ -41,13 +49,13 @@ public class UserTaskController extends BaseController {
         return buildPageItemResponse(request.getPage(), response.size(), page.getTotalElements(), response);
     }
 
-    @PostMapping("update")
-    private ResponseEntity<?> updateParticipant(@RequestBody @Valid UpdateUserTaskRequest request){
-        List<UserTaskDTO> response = userTaskService.updateParticipant(request).stream().map(
-                userTask -> modelMapper.map(userTask, UserTaskDTO.class)
-        ).toList();
-        return buildListItemResponse(response, response.size());
-    }
+//    @PostMapping("update")
+//    private ResponseEntity<?> updateParticipant(@RequestBody @Valid UpdateUserTaskRequest request){
+//        List<UserTaskDTO> response = userTaskService.updateParticipant(request).stream().map(
+//                userTask -> modelMapper.map(userTask, UserTaskDTO.class)
+//        ).toList();
+//        return buildListItemResponse(response, response.size());
+//    }
 
     @PostMapping("status/{id}")
     private ResponseEntity<?> updatePersonalStatus(@PathVariable Long id, @RequestBody @Valid UpdatePersonalStatusRequest request){
@@ -58,6 +66,12 @@ public class UserTaskController extends BaseController {
     @PostMapping("finished/{id}")
     private ResponseEntity<?> finishedMyTask(@PathVariable Long id){
         UserTaskDTO response = modelMapper.map(userTaskService.finishedMyTask(id), UserTaskDTO.class);
+        return buildItemResponse(response);
+    }
+
+    @PostMapping("delete/{id}")
+    private ResponseEntity<?> DeleteUserTask(@PathVariable Long id){
+        UserTaskDTO response = modelMapper.map(userTaskService.deleteUserTask(id), UserTaskDTO.class);
         return buildItemResponse(response);
     }
 }

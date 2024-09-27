@@ -19,5 +19,5 @@ public class UpdateTaskRequest {
     @NotBlank(message = "Ngày kết thúc không được để trống")
     private String deadline;
 
-    private List<String> userIds;
+//    private List<String> userIds;
 }

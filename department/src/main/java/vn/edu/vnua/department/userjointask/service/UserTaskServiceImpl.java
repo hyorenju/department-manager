@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import vn.edu.vnua.department.common.Constants;
 import vn.edu.vnua.department.masterdata.entity.MasterData;
 import vn.edu.vnua.department.masterdata.repository.MasterDataRepository;
+import vn.edu.vnua.department.project.entity.Project;
+import vn.edu.vnua.department.project.repository.ProjectRepository;
 import vn.edu.vnua.department.task.entity.Task;
 import vn.edu.vnua.department.task.repository.TaskRepository;
 import vn.edu.vnua.department.user.entity.User;
@@ -19,10 +21,7 @@ import vn.edu.vnua.department.user.repository.UserRepository;
 import vn.edu.vnua.department.userjointask.entity.UserTask;
 import vn.edu.vnua.department.userjointask.repository.CustomUserTaskRepository;
 import vn.edu.vnua.department.userjointask.repository.UserTaskRepository;
-import vn.edu.vnua.department.userjointask.request.GetUserTaskListRequest;
-import vn.edu.vnua.department.userjointask.request.GetUserTaskPageRequest;
-import vn.edu.vnua.department.userjointask.request.UpdatePersonalStatusRequest;
-import vn.edu.vnua.department.userjointask.request.UpdateUserTaskRequest;
+import vn.edu.vnua.department.userjointask.request.*;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -32,20 +31,45 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class UserTaskServiceImpl implements UserTaskService{
+public class UserTaskServiceImpl implements UserTaskService {
     private final UserTaskRepository userTaskRepository;
     private final UserRepository userRepository;
     private final MasterDataRepository masterDataRepository;
     private final TaskRepository taskRepository;
+    private final ProjectRepository projectRepository;
 
     @Override
     public List<UserTask> getUserTaskList(GetUserTaskListRequest request) {
         request.setIsSchedule(false);
-        if(request.getTaskId() != null) {
+        if (request.getTaskId() != null) {
             Specification<UserTask> specification = CustomUserTaskRepository.filterUserTaskList(request);
             return userTaskRepository.findAll(specification);
         }
         return null;
+    }
+
+    @Override
+    public List<UserTask> getUserTaskCalendar(GetUserTaskListRequest request) {
+        request.setIsSchedule(false);
+        Specification<UserTask> specification = CustomUserTaskRepository.filterUserTaskList(request);
+        return userTaskRepository.findAll(specification);
+    }
+
+    @Override
+    public List<UserTask> createUserTaskList(Long taskId, CreateUserTaskRequest request) {
+        Task task = taskRepository.findById(taskId).orElseThrow(()->new RuntimeException(Constants.TaskConstant.TASK_NOT_FOUND));
+        MasterData doingStatus = masterDataRepository.findByName(Constants.MasterDataNameConstant.DOING);
+
+        List<UserTask> userTasks = new ArrayList<>();
+        for (String userId :
+                request.getUserIds()) {
+            UserTask userTask = new UserTask();
+            userTask.setTask(task);
+            userTask.setUser(User.builder().id(userId).build());
+            userTask.setPersonalStatus(doingStatus);
+            userTasks.add(userTask);
+        }
+        return userTaskRepository.saveAllAndFlush(userTasks);
     }
 
     @Override
@@ -71,7 +95,7 @@ public class UserTaskServiceImpl implements UserTaskService{
 
         List<UserTask> userTasks = new ArrayList<>();
 
-        for (String userId:
+        for (String userId :
                 request.getUserIds()) {
             User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
             userTasks.add(UserTask.builder()
@@ -90,34 +114,158 @@ public class UserTaskServiceImpl implements UserTaskService{
 
     @Override
     public UserTask updatePersonalStatus(UpdatePersonalStatusRequest request, Long id) {
-        MasterData taskStatus = masterDataRepository.findById(request.getTaskStatusId()).orElseThrow(()->new RuntimeException(Constants.MasterDataConstant.TASK_STATUS_NOT_FOUND));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User modifier = userRepository.getUserById(authentication.getPrincipal().toString());
 
-        UserTask userTask = userTaskRepository.findById(id).orElseThrow(()-> new RuntimeException(Constants.UserTaskConstant.USER_TASK_NOT_FOUND));
+        UserTask userTask = userTaskRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.UserTaskConstant.USER_TASK_NOT_FOUND));
+        User createdBy = userTask.getTask().getProject().getCreatedBy();
+
+        if (!modifier.getRole().getId().equals(Constants.RoleIdConstant.MANAGER) &&
+                !modifier.getRole().getId().equals(Constants.RoleIdConstant.DEPUTY) &&
+                modifier != createdBy) {
+            throw new RuntimeException(Constants.TaskConstant.CANNOT_UPDATE);
+        }
+
+        MasterData taskStatus = masterDataRepository.findById(request.getTaskStatusId()).orElseThrow(() -> new RuntimeException(Constants.MasterDataConstant.TASK_STATUS_NOT_FOUND));
+
+        MasterData doingStatus = masterDataRepository.findByName(Constants.MasterDataNameConstant.DOING);
+        MasterData doingLateStatus = masterDataRepository.findByName(Constants.MasterDataNameConstant.DOING_LATE);
+        MasterData finishedLateStatus = masterDataRepository.findByName(Constants.MasterDataNameConstant.FINISHED_LATE);
+        MasterData finishedSoonerStatus = masterDataRepository.findByName(Constants.MasterDataNameConstant.FINISHED_SOONER);
+        MasterData finishedOnTimeStatus = masterDataRepository.findByName(Constants.MasterDataNameConstant.FINISHED_ON_TIME);
+
+        Timestamp deadline = userTask.getTask().getProject().getDeadline();
+        Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+        //start of today
+        Timestamp today = Timestamp.valueOf(LocalDate.now().atStartOfDay());
 
         userTask.setPersonalStatus(taskStatus);
         userTask.setNote(request.getNote());
+        userTaskRepository.saveAndFlush(userTask);
+
+        Task task = userTask.getTask();
+        Project project = task.getProject();
+        if (taskStatus == doingStatus || taskStatus == doingLateStatus) {
+            userTask.setFinishedAt(null);
+            if (deadline.before(now)) {
+                task.setTaskStatus(doingLateStatus);
+            } else {
+                task.setTaskStatus(doingStatus);
+            }
+            if (deadline.before(now)) {
+                project.setProjectStatus(doingLateStatus);
+            } else {
+                project.setProjectStatus(doingStatus);
+            }
+            taskRepository.saveAndFlush(task);
+            projectRepository.saveAndFlush(project);
+            return userTaskRepository.saveAndFlush(userTask);
+        }
+
+        if (!userTaskRepository.existsByTaskAndPersonalStatus(task, doingStatus) &&
+                !userTaskRepository.existsByTaskAndPersonalStatus(task, doingLateStatus)) {
+            if (deadline.before(now)) {
+                task.setTaskStatus(finishedLateStatus);
+            } else if (deadline.after(now)) {
+                task.setTaskStatus(finishedSoonerStatus);
+            } else if (deadline.equals(today)) {
+                task.setTaskStatus(finishedOnTimeStatus);
+            }
+        }
+        taskRepository.saveAndFlush(task);
+
+        if (!taskRepository.existsByProjectAndTaskStatus(project, doingStatus) &&
+                !taskRepository.existsByProjectAndTaskStatus(project, doingLateStatus)) {
+            if (deadline.before(now)) {
+                project.setProjectStatus(finishedLateStatus);
+            } else if (deadline.after(now)) {
+                project.setProjectStatus(finishedSoonerStatus);
+            } else if (deadline.equals(today)) {
+                project.setProjectStatus(finishedOnTimeStatus);
+            }
+        }
+        projectRepository.saveAndFlush(project);
+
 
         return userTaskRepository.saveAndFlush(userTask);
     }
 
     @Override
     public UserTask finishedMyTask(Long id) {
-        UserTask userTask = userTaskRepository.findById(id).orElseThrow(()-> new RuntimeException(Constants.UserTaskConstant.USER_TASK_NOT_FOUND));
+        UserTask userTask = userTaskRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.UserTaskConstant.USER_TASK_NOT_FOUND));
 
         Timestamp deadline = userTask.getTask().getDeadline();
         Timestamp now = Timestamp.valueOf(LocalDateTime.now());
-        Timestamp startOfToday = Timestamp.valueOf(LocalDate.now().atStartOfDay());
+        Timestamp today = Timestamp.valueOf(LocalDate.now().atStartOfDay());
 
-        if(deadline.before(now)){
-            userTask.setPersonalStatus(masterDataRepository.findByName(Constants.MasterDataNameConstant.FINISHED_LATE));
-        } else if(deadline.after(now)) {
-            userTask.setPersonalStatus(masterDataRepository.findByName(Constants.MasterDataNameConstant.FINISHED_SOONER));
-        } else if(deadline.equals(startOfToday)){
-            userTask.setPersonalStatus(masterDataRepository.findByName(Constants.MasterDataNameConstant.FINISHED_ON_TIME));
+        MasterData doingStatus = masterDataRepository.findByName(Constants.MasterDataNameConstant.DOING);
+        MasterData doingLateStatus = masterDataRepository.findByName(Constants.MasterDataNameConstant.DOING_LATE);
+        MasterData finishedLateStatus = masterDataRepository.findByName(Constants.MasterDataNameConstant.FINISHED_LATE);
+        MasterData finishedSoonerStatus = masterDataRepository.findByName(Constants.MasterDataNameConstant.FINISHED_SOONER);
+        MasterData finishedOnTimeStatus = masterDataRepository.findByName(Constants.MasterDataNameConstant.FINISHED_ON_TIME);
+
+        if (deadline.before(now)) {
+            userTask.setPersonalStatus(finishedLateStatus);
+        } else if (deadline.after(now)) {
+            userTask.setPersonalStatus(finishedSoonerStatus);
+        } else if (deadline.equals(today)) {
+            userTask.setPersonalStatus(finishedOnTimeStatus);
         }
         userTask.setFinishedAt(now);
+        userTaskRepository.saveAndFlush(userTask);
+
+        Task task = userTask.getTask();
+        Project project = task.getProject();
+        Timestamp deadline1 = userTask.getTask().getProject().getDeadline();
+        Timestamp now1 = Timestamp.valueOf(LocalDateTime.now());
+        //start of today
+        Timestamp today1 = Timestamp.valueOf(LocalDate.now().atStartOfDay());
+        if (!userTaskRepository.existsByTaskAndPersonalStatus(task, doingStatus) &&
+                !userTaskRepository.existsByTaskAndPersonalStatus(task, doingLateStatus)) {
+
+            if (deadline1.before(now1)) {
+                task.setTaskStatus(finishedLateStatus);
+            } else if (deadline1.after(now1)) {
+                task.setTaskStatus(finishedSoonerStatus);
+            } else if (deadline1.equals(today1)) {
+                task.setTaskStatus(finishedOnTimeStatus);
+            }
+        }
+        taskRepository.saveAndFlush(task);
+
+        if (!taskRepository.existsByProjectAndTaskStatus(project, doingStatus) &&
+                !taskRepository.existsByProjectAndTaskStatus(project, doingLateStatus)) {
+
+            if (deadline1.before(now1)) {
+                project.setProjectStatus(finishedLateStatus);
+            } else if (deadline1.after(now1)) {
+                project.setProjectStatus(finishedSoonerStatus);
+            } else if (deadline1.equals(today1)) {
+                project.setProjectStatus(finishedOnTimeStatus);
+            }
+        }
+        projectRepository.saveAndFlush(project);
 
         return userTaskRepository.saveAndFlush(userTask);
+    }
+
+    @Override
+    public UserTask deleteUserTask(Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User modifier = userRepository.getUserById(authentication.getPrincipal().toString());
+
+        UserTask userTask = userTaskRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.UserTaskConstant.USER_TASK_NOT_FOUND));
+        User createdBy = userTask.getTask().getProject().getCreatedBy();
+
+        if (!modifier.getRole().getId().equals(Constants.RoleIdConstant.MANAGER) &&
+                !modifier.getRole().getId().equals(Constants.RoleIdConstant.DEPUTY) &&
+                modifier != createdBy) {
+            throw new RuntimeException(Constants.TaskConstant.CANNOT_UPDATE);
+        }
+
+        userTaskRepository.delete(userTask);
+
+        return userTask;
     }
 
     @Scheduled(cron = "0 0 0 * * *")
@@ -128,9 +276,9 @@ public class UserTaskServiceImpl implements UserTaskService{
 
         List<UserTask> userTaskLate = new ArrayList<>();
         List<UserTask> userTaskList = userTaskRepository.findAll(specification);
-        for (UserTask userTask:
-             userTaskList) {
-            if(userTask.getTask().getDeadline().before(Timestamp.valueOf(LocalDateTime.now()))){
+        for (UserTask userTask :
+                userTaskList) {
+            if (userTask.getTask().getDeadline().before(Timestamp.valueOf(LocalDateTime.now()))) {
                 userTask.setPersonalStatus(masterDataRepository.findByName(Constants.MasterDataNameConstant.DOING_LATE));
                 userTaskLate.add(userTask);
             }

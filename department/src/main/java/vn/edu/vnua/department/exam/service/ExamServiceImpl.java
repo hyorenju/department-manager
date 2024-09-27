@@ -7,6 +7,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import vn.edu.vnua.department.common.Constants;
 import vn.edu.vnua.department.department.entity.Department;
@@ -69,6 +70,9 @@ public class ExamServiceImpl implements ExamService {
                 request.getSubject().getId(), request.getClassId(), request.getExamGroup(), request.getSchoolYear().getId(), request.getTerm(), request.getCluster()
         )) {
             throw new RuntimeException(Constants.ExamConstant.EXAM_IS_EXISTED);
+        }
+        if(!StringUtils.hasText(request.getLecturerTeach().getId())){
+            throw new RuntimeException(Constants.ExamConstant.LECTURER_TEACH_NOT_BLANK);
         }
 
         Subject subject = subjectRepository.findById(request.getSubject().getId()).orElseThrow(() -> new RuntimeException(Constants.SubjectConstant.SUBJECT_NOT_FOUND));

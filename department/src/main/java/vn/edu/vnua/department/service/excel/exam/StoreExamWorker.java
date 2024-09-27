@@ -116,6 +116,9 @@ public class StoreExamWorker implements Callable<ExamExcelData> {
             if (examForm == null) {
                 errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(11).errorMsg("Hình thức không tồn tại").build());
             }
+            if (!StringUtils.hasText(lecturerTeachId)) {
+                errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(13).errorMsg("GV giảng dạy không được để trống").build());
+            }
             if (StringUtils.hasText(lecturerTeachId) && lecturerTeach == null) {
                 errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(13).errorMsg("GV không tồn tại").build());
             }

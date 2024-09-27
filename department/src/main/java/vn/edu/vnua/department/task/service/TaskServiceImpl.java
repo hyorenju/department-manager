@@ -23,6 +23,7 @@ import vn.edu.vnua.department.task.request.UpdateTaskRequest;
 import vn.edu.vnua.department.user.entity.User;
 import vn.edu.vnua.department.user.repository.UserRepository;
 import vn.edu.vnua.department.userjointask.entity.UserTask;
+import vn.edu.vnua.department.userjointask.repository.UserTaskRepository;
 import vn.edu.vnua.department.userjointask.service.UserTaskService;
 import vn.edu.vnua.department.util.MyUtils;
 
@@ -40,6 +41,7 @@ public class TaskServiceImpl implements TaskService {
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
     private final MasterDataRepository masterDataRepository;
+    private final UserTaskRepository userTaskRepository;
 
     @Override
     public List<Task> getTaskList(GetTaskListRequest request) {
@@ -56,8 +58,7 @@ public class TaskServiceImpl implements TaskService {
         Project project = projectRepository.findById(request.getProjectId()).orElseThrow(() -> new RuntimeException(Constants.ProjectConstant.PROJECT_NOT_FOUND));
         //Kiểm tra nếu người tạo task khác người tạo project
         User createdBy = project.getCreatedBy();
-        if (!modifier.getRole().getId().equals(Constants.RoleIdConstant.MANAGER) &&
-                !modifier.getRole().getId().equals(Constants.RoleIdConstant.DEPUTY) &&
+        if (!modifier.getRole().getId().equals(Constants.RoleIdConstant.ADMIN) &&
                 modifier != createdBy) {
             throw new RuntimeException(Constants.TaskConstant.CANNOT_UPDATE);
         }
@@ -91,20 +92,22 @@ public class TaskServiceImpl implements TaskService {
         task.setOrdinalNumber(project.getTasks().size() + 1);
         task.setTaskStatus(doingStatus);
         task.setProject(project);
+        taskRepository.saveAndFlush(task);
 
         List<UserTask> userTasks = new ArrayList<>();
         for (String userId :
                 request.getUserIds()) {
             UserTask userTask = new UserTask();
-//            userTask.setTask(task);
+            userTask.setTask(task);
             userTask.setUser(User.builder().id(userId).build());
             userTask.setPersonalStatus(doingStatus);
             userTasks.add(userTask);
         }
+        userTaskRepository.saveAll(userTasks);
 
         task.setUserJoined(userTasks);
 
-        return taskRepository.saveAndFlush(task);
+        return task;
     }
 
     @Override
@@ -149,21 +152,24 @@ public class TaskServiceImpl implements TaskService {
             throw new RuntimeException(String.format(Constants.TaskConstant.DEADLINE_PROBLEM, projectStartStr, projectDeadlineStr));
         }
 
-        List<UserTask> userTasks = new ArrayList<>();
-        for (String userId :
-                request.getUserIds()) {
-            userTasks.add(UserTask.builder()
-                    .task(task)
-                    .user(userRepository.getUserById(userId))
-                    .personalStatus(masterDataRepository.findByName(Constants.MasterDataNameConstant.DOING))
-                    .build());
-        }
+//        MasterData doingStatus = masterDataRepository.findByName(Constants.MasterDataNameConstant.DOING);
+
+//        List<UserTask> userTasks = new ArrayList<>();
+//        for (String userId :
+//                request.getUserIds()) {
+//            UserTask userTask = new UserTask();
+//            userTask.setTask(task);
+//            userTask.setUser(User.builder().id(userId).build());
+//            userTask.setPersonalStatus(doingStatus);
+//            userTasks.add(userTask);
+//        }
+//        userTaskRepository.saveAll(userTasks);
 
         task.setName(request.getName());
         task.setDescription(request.getDescription());
         task.setStart(start);
         task.setDeadline(deadline);
-        task.setUserJoined(userTasks);
+//        task.setUserJoined(userTasks);
 
         return taskRepository.saveAndFlush(task);
     }

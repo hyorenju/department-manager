@@ -146,6 +146,7 @@ public interface Constants {
         String EXAM_NOT_FOUND = "Không tìm thấy bản ghi lịch thi";
         String PROCTORS_NOT_BE_SAME = "Hai giám thị không được trùng nhau";
         String EXAM_IS_EXISTED = "Lịch thi này đã tồn tại, vui lòng kiểm tra lại";
+        String LECTURER_TEACH_NOT_BLANK = "Giáo viên giảng dạy không được để trống";
     }
 
     interface ThreadsNumConstant{
