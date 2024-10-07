@@ -25,6 +25,12 @@ public class CustomSubjectRepository {
                                 "id", "name")
                 );
             }
+            if(StringUtils.hasText(request.getId())) {
+                predicates.add(criteriaBuilder.like(root.get("id"), "%" + request.getId() + "%"));
+            }
+            if(StringUtils.hasText(request.getName())) {
+                predicates.add(criteriaBuilder.like(root.get("name"), "%" + request.getName() + "%"));
+            }
             if(StringUtils.hasText(request.getFacultyId())) {
                 predicates.add(criteriaBuilder.equal(root.get("department").get("faculty").get("id"), request.getFacultyId()));
             }
@@ -47,6 +53,12 @@ public class CustomSubjectRepository {
                         CriteriaBuilderUtil.createPredicateForSearchInsensitive(root, criteriaBuilder, request.getKeyword(),
                                 "id", "name")
                 );
+            }
+            if(StringUtils.hasText(request.getId())) {
+                predicates.add(criteriaBuilder.like(root.get("id"), "%" + request.getId() + "%"));
+            }
+            if(StringUtils.hasText(request.getName())) {
+                predicates.add(criteriaBuilder.like(root.get("name"), "%" + request.getName() + "%"));
             }
             if(StringUtils.hasText(request.getFacultyId())) {
                 predicates.add(criteriaBuilder.equal(root.get("department").get("faculty").get("id"), request.getFacultyId()));

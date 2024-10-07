@@ -16,6 +16,7 @@ import vn.edu.vnua.department.teaching.request.*;
 import vn.edu.vnua.department.teaching.service.TeachingService;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -36,7 +37,7 @@ public class TeachingController extends BaseController {
     }
 
     @PostMapping("create")
-    private ResponseEntity<?> createTeaching(@RequestBody @Valid CreateTeachingRequest request){
+    private ResponseEntity<?> createTeaching(@RequestBody @Valid CreateTeachingRequest request) throws ParseException {
         TeachingDTO response = modelMapper.map(teachingService.createTeaching(request), TeachingDTO.class);
         return buildItemResponse(response);
     }
@@ -56,6 +57,12 @@ public class TeachingController extends BaseController {
     @PostMapping("lock/{id}")
     private ResponseEntity<?> lockTeaching(@PathVariable Long id){
         TeachingDTO response = modelMapper.map(teachingService.lockTeaching(id), TeachingDTO.class);
+        return buildItemResponse(response);
+    }
+
+    @PostMapping("warn/{id}")
+    private ResponseEntity<?> warnTeaching(@PathVariable Long id){
+        TeachingDTO response = modelMapper.map(teachingService.warnTeaching(id), TeachingDTO.class);
         return buildItemResponse(response);
     }
 

@@ -5,6 +5,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 import vn.edu.vnua.department.common.Constants;
+import vn.edu.vnua.department.project.request.FilterProjectPage;
 import vn.edu.vnua.department.userjointask.entity.UserTask;
 import vn.edu.vnua.department.userjointask.request.GetUserTaskListRequest;
 import vn.edu.vnua.department.userjointask.request.GetUserTaskPageRequest;
@@ -76,6 +77,17 @@ public class CustomUserTaskRepository {
                     criteriaBuilder.asc(root.get("personalStatus").get("name")),
                     criteriaBuilder.asc(root.get("task").get("project").get("createdAt"))
             );
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        });
+    }
+
+    public static Specification<UserTask> filterPage(FilterProjectPage request) {
+        return ((root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            if (StringUtils.hasText(request.getMemberId())) {
+                predicates.add(criteriaBuilder.like(root.get("user").get("id"), request.getMemberId()));
+            }
+
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         });
     }

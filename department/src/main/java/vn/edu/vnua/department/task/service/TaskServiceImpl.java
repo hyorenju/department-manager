@@ -1,9 +1,6 @@
 package vn.edu.vnua.department.task.service;
 
-import lombok.Generated;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,25 +10,23 @@ import vn.edu.vnua.department.masterdata.entity.MasterData;
 import vn.edu.vnua.department.masterdata.repository.MasterDataRepository;
 import vn.edu.vnua.department.project.entity.Project;
 import vn.edu.vnua.department.project.repository.ProjectRepository;
+import vn.edu.vnua.department.project.request.FilterProjectPage;
 import vn.edu.vnua.department.task.entity.Task;
 import vn.edu.vnua.department.task.repository.CustomTaskRepository;
 import vn.edu.vnua.department.task.repository.TaskRepository;
 import vn.edu.vnua.department.task.request.CreateTaskRequest;
 import vn.edu.vnua.department.task.request.GetTaskListRequest;
-import vn.edu.vnua.department.task.request.UpdateTaskParticipantRequest;
 import vn.edu.vnua.department.task.request.UpdateTaskRequest;
 import vn.edu.vnua.department.user.entity.User;
 import vn.edu.vnua.department.user.repository.UserRepository;
 import vn.edu.vnua.department.userjointask.entity.UserTask;
 import vn.edu.vnua.department.userjointask.repository.UserTaskRepository;
-import vn.edu.vnua.department.userjointask.service.UserTaskService;
 import vn.edu.vnua.department.util.MyUtils;
 
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 @Service

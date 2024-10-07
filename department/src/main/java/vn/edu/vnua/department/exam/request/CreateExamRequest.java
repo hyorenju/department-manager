@@ -48,6 +48,9 @@ public class CreateExamRequest {
 
     private CreateUserRequest lecturerTeach;
 
+    @NotNull(message = "Hạn nộp điểm không được để trống")
+    private String deadline;
+
     private CreateUserRequest proctor1;
 
     private CreateUserRequest proctor2;

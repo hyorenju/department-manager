@@ -49,13 +49,13 @@ public class UserTaskController extends BaseController {
         return buildPageItemResponse(request.getPage(), response.size(), page.getTotalElements(), response);
     }
 
-//    @PostMapping("update")
-//    private ResponseEntity<?> updateParticipant(@RequestBody @Valid UpdateUserTaskRequest request){
-//        List<UserTaskDTO> response = userTaskService.updateParticipant(request).stream().map(
-//                userTask -> modelMapper.map(userTask, UserTaskDTO.class)
-//        ).toList();
-//        return buildListItemResponse(response, response.size());
-//    }
+    @PostMapping("update")
+    private ResponseEntity<?> updateParticipant(@RequestBody @Valid UpdateUserTaskRequest request){
+        List<UserTaskDTO> response = userTaskService.updateParticipant(request).stream().map(
+                userTask -> modelMapper.map(userTask, UserTaskDTO.class)
+        ).toList();
+        return buildListItemResponse(response, response.size());
+    }
 
     @PostMapping("status/{id}")
     private ResponseEntity<?> updatePersonalStatus(@PathVariable Long id, @RequestBody @Valid UpdatePersonalStatusRequest request){

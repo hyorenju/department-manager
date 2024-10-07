@@ -46,7 +46,8 @@ public class WriteErrorExamWorker implements Callable<Void> {
         row.createCell(21).setCellValue(exam.getExamTaker() != null ? exam.getExamTaker().getId() : "");
         row.createCell(22).setCellValue(exam.getExamGiver() != null ? exam.getExamGiver().getId() : "");
         row.createCell(23).setCellValue(exam.getPointGiver() != null ? exam.getPointGiver().getId() : "");
-        row.createCell(24).setCellValue("");
+        row.createCell(24).setCellValue(exam.getDeadline() != null ? MyUtils.convertTimestampToString(exam.getDeadline()) : "");
+        row.createCell(25).setCellValue("");
 
         examExcelData.getErrorDetailList().forEach(errorDetail -> {
             Cell cell = row.getCell(errorDetail.getColumnIndex());

@@ -56,7 +56,7 @@ public interface Constants {
         String DEFAULT_PASSWORD = "123";
         String ID_REGEX = "^[\\p{L}\\d]*$";
         String NAME_REGEX = "^[\\p{L}\\s]*$";
-        String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@gmail(.+)$";
+        String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
         String PHONE_NUMBER_REGEX = "^(0?)(3[2-9]|5[6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])[0-9]{7}$";
     }
 

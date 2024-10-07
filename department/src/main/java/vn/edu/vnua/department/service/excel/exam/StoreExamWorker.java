@@ -61,6 +61,7 @@ public class StoreExamWorker implements Callable<ExamExcelData> {
             String examTakerId = infoList[21].strip();
             String examGiverId = infoList[22].strip();
             String pointGiverId = infoList[23].strip();
+            String deadline = infoList[24].strip();
 
             MasterData schoolYear = masterDataRepository.findByName(schoolYearName);
             Subject subject = subjectRepository.getSubjectById(subjectId);
@@ -92,6 +93,7 @@ public class StoreExamWorker implements Callable<ExamExcelData> {
                     .form(examForm)
                     .examCode(examCode)
                     .lecturerTeach(lecturerTeach)
+                    .deadline(MyUtils.convertTimestampFromExcel(deadline))
                     .picker(picker)
                     .printer(printer)
                     .proctor1(proctor1)
@@ -103,6 +105,7 @@ public class StoreExamWorker implements Callable<ExamExcelData> {
                     .examGiver(examGiver)
                     .pointGiver(pointGiver)
                     .createdAt(Timestamp.valueOf(LocalDateTime.now()))
+                    .isWarning(true)
                     .createdBy(createdBy)
                     .build();
 
@@ -152,10 +155,10 @@ public class StoreExamWorker implements Callable<ExamExcelData> {
             if (StringUtils.hasText(pointGiverId) && pointGiver == null) {
                 errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(23).errorMsg("GV không tồn tại").build());
             }
-            if(examRepository.existsBySubjectIdAndClassIdAndExamGroupAndSchoolYearIdAndTermAndCluster(
-                    subject != null ? exam.getSubject().getId() : null, exam.getClassId(), exam.getExamGroup(), schoolYear != null ? exam.getSchoolYear().getId(): null, exam.getTerm(), exam.getCluster()
+            if(examRepository.existsBySubjectIdAndExamGroupAndSchoolYearIdAndTermAndCluster(
+                    subject != null ? exam.getSubject().getId() : null, exam.getExamGroup(), schoolYear != null ? exam.getSchoolYear().getId(): null, exam.getTerm(), exam.getCluster()
             )){
-                errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(24).errorMsg("Phân công đã tồn tại").build());
+                errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(25).errorMsg("Phân công đã tồn tại").build());
             }
 
             examExcelData.setExam(exam);

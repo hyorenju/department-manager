@@ -9,7 +9,6 @@ import vn.edu.vnua.department.domain.validation.ImportExamValidator;
 import vn.edu.vnua.department.exam.model.ExamExcelData;
 import vn.edu.vnua.department.masterdata.entity.MasterData;
 import vn.edu.vnua.department.subject.entity.Subject;
-import vn.edu.vnua.department.teaching.model.TeachingExcelData;
 import vn.edu.vnua.department.user.entity.User;
 
 import java.sql.Timestamp;
@@ -64,6 +63,12 @@ public class Exam {
     @ManyToOne
     @JoinColumn(name = "lecturer_teach")
     private User lecturerTeach;
+
+    @Column(name = "deadline")
+    private Timestamp deadline;
+
+    @Column(name = "is_warning")
+    private Boolean isWarning;
 
     @ManyToOne
     @JoinColumn(name = "proctor1")
@@ -148,8 +153,11 @@ public class Exam {
         if (!ImportExamValidator.validateNaturalNum(lessonsTest)) {
             errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(5).errorMsg("Số tiết không hợp lệ").build());
         }
-        if (testDay != null && !ImportExamValidator.validateDob(testDay)) {
+        if (testDay != null && !ImportExamValidator.validateTestDay(testDay)) {
             errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(3).errorMsg("Dạng dd/MM/yyyy").build());
+        }
+        if (!ImportExamValidator.validateDeadline(deadline)) {
+            errorDetailList.add(ExamExcelData.ErrorDetail.builder().columnIndex(24).errorMsg("Dạng dd/MM/yyyy").build());
         }
         return errorDetailList;
     }

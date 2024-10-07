@@ -11,9 +11,11 @@ public class ImportExamValidator {
         return (naturalNum != null && naturalNum >= 0);
     }
 
-    public static boolean validateDob(Timestamp testDay) {
+    public static boolean validateTestDay(Timestamp testDay) {
         return !testDay.equals(new Timestamp(0));
     }
 
-
+    public static boolean validateDeadline(Timestamp deadline) {
+        return !deadline.equals(new Timestamp(0));
+    }
 }

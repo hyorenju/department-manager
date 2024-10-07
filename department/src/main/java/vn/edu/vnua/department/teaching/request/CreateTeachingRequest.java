@@ -1,5 +1,6 @@
 package vn.edu.vnua.department.teaching.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -32,6 +33,9 @@ public class CreateTeachingRequest {
 
     @NotNull(message = "Học kỳ không được để trống")
     private Byte term;
+
+//    @NotBlank(message = "Hạn nộp điểm không được để trống")
+//    private String deadline;
 
     private String componentFile;
 

@@ -1036,6 +1036,7 @@ public class ExcelServiceImpl implements ExcelService {
         headerRow.createCell(3).setCellValue("Mã môn học");
         headerRow.createCell(4).setCellValue("NMH");
         headerRow.createCell(5).setCellValue("Mã lớp");
+//        headerRow.createCell(6).setCellValue("Hạn nộp");
         headerRow.createCell(6).setCellValue("Ghi chú");
     }
 
@@ -1079,7 +1080,8 @@ public class ExcelServiceImpl implements ExcelService {
         headerRow.createCell(21).setCellValue("Nhận bài");
         headerRow.createCell(22).setCellValue("Giao bài");
         headerRow.createCell(23).setCellValue("Giao điểm");
-        headerRow.createCell(24).setCellValue("Ghi chú");
+        headerRow.createCell(24).setCellValue("Hạn nộp điểm");
+        headerRow.createCell(25).setCellValue("Ghi chú");
     }
 
     private void createExamListHeader(Sheet sheet) {

@@ -7,7 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class EmailValidator implements ConstraintValidator<EmailAnnotation, String> {
-    private final String EMAIL_PATTERN = "^[A-Za-z0-9+_.-]+@gmail(.+)$";
+    private final String EMAIL_PATTERN = "^[A-Za-z0-9+_.-]+@(.+)$";
 
     private final Pattern pattern = Pattern.compile(EMAIL_PATTERN);
 

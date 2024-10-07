@@ -6,6 +6,7 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
 import vn.edu.vnua.department.teaching.entity.Teaching;
 import vn.edu.vnua.department.teaching.model.TeachingExcelData;
+import vn.edu.vnua.department.util.MyUtils;
 
 import java.util.concurrent.Callable;
 
@@ -25,6 +26,7 @@ public class WriteErrorTeachingWorker implements Callable<Void> {
         row.createCell(3).setCellValue(teaching.getSubject() != null ? teaching.getSubject().getId() : "");
         row.createCell(4).setCellValue(teaching.getTeachingGroup() != null ? teaching.getTeachingGroup().toString() : "");
         row.createCell(5).setCellValue(teaching.getClassId() != null ? teaching.getClassId() : "");
+//        row.createCell(6).setCellValue(teaching.getDeadline() != null ? MyUtils.convertTimestampToString(teaching.getDeadline()) : "");
         row.createCell(6).setCellValue("");
 
         teachingExcelData.getErrorDetailList().forEach(errorDetail -> {

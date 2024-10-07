@@ -16,7 +16,7 @@ import static java.lang.annotation.ElementType.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = EmailValidator.class)
 public @interface EmailAnnotation {
-    String message() default "Email phải là định dạng gmail";
+    String message() default "Địa chỉ mail không hợp lệ";
 
     Class<?>[] groups() default {};
 

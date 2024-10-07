@@ -31,6 +31,9 @@ public class ExamDTO {
     private Integer lessonStart;
     private Integer lessonsTest;
     private UserBasicDTO lecturerTeach;
+    @JsonFormat(pattern = Constants.DateTimeConstants.DATE_FORMAT, timezone = Constants.DateTimeConstants.TIME_ZONE)
+    private Timestamp deadline;
+    private Boolean isWarning;
     private UserBasicDTO proctor1;
     private UserBasicDTO proctor2;
     private UserBasicDTO marker1;

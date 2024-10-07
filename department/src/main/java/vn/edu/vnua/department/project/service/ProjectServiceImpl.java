@@ -7,6 +7,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import vn.edu.vnua.department.common.Constants;
 import vn.edu.vnua.department.masterdata.entity.MasterData;
 import vn.edu.vnua.department.masterdata.repository.MasterDataRepository;
@@ -14,10 +15,13 @@ import vn.edu.vnua.department.project.entity.Project;
 import vn.edu.vnua.department.project.repository.CustomProjectRepository;
 import vn.edu.vnua.department.project.repository.ProjectRepository;
 import vn.edu.vnua.department.project.request.CreateProjectRequest;
+import vn.edu.vnua.department.project.request.FilterProjectPage;
 import vn.edu.vnua.department.project.request.GetProjectListRequest;
 import vn.edu.vnua.department.project.request.UpdateProjectRequest;
+import vn.edu.vnua.department.task.service.TaskService;
 import vn.edu.vnua.department.user.entity.User;
 import vn.edu.vnua.department.user.repository.UserRepository;
+import vn.edu.vnua.department.userjointask.service.UserTaskService;
 import vn.edu.vnua.department.util.MyUtils;
 
 import java.sql.Timestamp;
@@ -30,11 +34,28 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final MasterDataRepository masterDataRepository;
+    private final TaskService taskService;
+    private final UserTaskService userTaskService;
 
     @Override
     public Page<Project> getProjectList(GetProjectListRequest request) {
         Specification<Project> specification = CustomProjectRepository.filterProjectList(request);
         return projectRepository.findAll(specification, PageRequest.of(request.getPage() - 1, request.getSize()));
+    }
+
+    @Override
+    public Page<Project> filterPage(FilterProjectPage request) {
+        if(StringUtils.hasText(request.getKeyword()) ||
+                StringUtils.hasText(request.getCreatedById()) ||
+                StringUtils.hasText(request.getStartDate()) ||
+                StringUtils.hasText(request.getEndDate()) ||
+                StringUtils.hasText(request.getStatusId()) ||
+                StringUtils.hasText(request.getMemberId())) {
+            Specification<Project> specification = CustomProjectRepository.filterPage(request);
+            return projectRepository.findAll(specification, PageRequest.of(request.getPage() - 1, request.getSize()));
+        } else {
+            return projectRepository.findAll(PageRequest.of(request.getPage() - 1, request.getSize()));
+        }
     }
 
     @Override

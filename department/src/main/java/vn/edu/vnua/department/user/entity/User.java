@@ -102,7 +102,7 @@ public class User {
             errorDetailList.add(UserExcelData.ErrorDetail.builder().columnIndex(2).errorMsg("Không được chứa ký tự đặc biệt").build());
         }
         if (!ImportUserValidation.validateUserEmail(email)) {
-            errorDetailList.add(UserExcelData.ErrorDetail.builder().columnIndex(4).errorMsg("Phải là định dạng gmail").build());
+            errorDetailList.add(UserExcelData.ErrorDetail.builder().columnIndex(4).errorMsg("Địa chỉ mail không hợp lệ").build());
         }
         if (!ImportUserValidation.validateUserPhoneNumber(phoneNumber)) {
             errorDetailList.add(UserExcelData.ErrorDetail.builder().columnIndex(5).errorMsg("SĐT không hợp lệ").build());

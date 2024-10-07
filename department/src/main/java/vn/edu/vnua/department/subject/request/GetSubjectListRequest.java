@@ -6,6 +6,8 @@ import vn.edu.vnua.department.request.GetPageBaseRequest;
 @Data
 public class GetSubjectListRequest extends GetPageBaseRequest {
     private String keyword;
+    private String id;
+    private String name;
     private String facultyId;
     private String departmentId;
 }

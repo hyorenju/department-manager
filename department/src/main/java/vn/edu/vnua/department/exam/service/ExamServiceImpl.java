@@ -1,9 +1,16 @@
 package vn.edu.vnua.department.exam.service;
 
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -18,9 +25,11 @@ import vn.edu.vnua.department.exam.request.*;
 import vn.edu.vnua.department.masterdata.entity.MasterData;
 import vn.edu.vnua.department.masterdata.repository.MasterDataRepository;
 import vn.edu.vnua.department.masterdata.request.GetUsersNotAssignedRequest;
+import vn.edu.vnua.department.security.JwtTokenProvider;
 import vn.edu.vnua.department.service.excel.ExcelService;
 import vn.edu.vnua.department.subject.entity.Subject;
 import vn.edu.vnua.department.subject.repository.SubjectRepository;
+import vn.edu.vnua.department.teaching.entity.Teaching;
 import vn.edu.vnua.department.user.entity.User;
 import vn.edu.vnua.department.user.repository.UserRepository;
 import vn.edu.vnua.department.util.MyUtils;
@@ -28,8 +37,11 @@ import vn.edu.vnua.department.util.MyUtils;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.ParseException;
+import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -41,6 +53,7 @@ public class ExamServiceImpl implements ExamService {
     private final MasterDataRepository masterDataRepository;
     private final SubjectRepository subjectRepository;
     private final ExcelService excelService;
+    private final JavaMailSender javaMailSender;
 
     @Override
     public Page<Exam> getExamList(GetExamListRequest request) {
@@ -66,12 +79,12 @@ public class ExamServiceImpl implements ExamService {
 
     @Override
     public Exam createExam(CreateExamRequest request) throws ParseException {
-        if (examRepository.existsBySubjectIdAndClassIdAndExamGroupAndSchoolYearIdAndTermAndCluster(
-                request.getSubject().getId(), request.getClassId(), request.getExamGroup(), request.getSchoolYear().getId(), request.getTerm(), request.getCluster()
+        if (examRepository.existsBySubjectIdAndExamGroupAndSchoolYearIdAndTermAndCluster(
+                request.getSubject().getId(), request.getExamGroup(), request.getSchoolYear().getId(), request.getTerm(), request.getCluster()
         )) {
             throw new RuntimeException(Constants.ExamConstant.EXAM_IS_EXISTED);
         }
-        if(!StringUtils.hasText(request.getLecturerTeach().getId())){
+        if (!StringUtils.hasText(request.getLecturerTeach().getId())) {
             throw new RuntimeException(Constants.ExamConstant.LECTURER_TEACH_NOT_BLANK);
         }
 
@@ -110,6 +123,8 @@ public class ExamServiceImpl implements ExamService {
 
                 .form(form)
                 .lecturerTeach(lecturerTeach)
+                .deadline(MyUtils.convertTimestampFromString(request.getDeadline()))
+                .isWarning(true)
                 .proctor1(proctor1)
                 .proctor2(proctor2)
                 .marker1(marker1)
@@ -171,6 +186,19 @@ public class ExamServiceImpl implements ExamService {
 
         exam.setModifiedAt(Timestamp.valueOf(LocalDateTime.now()));
         exam.setModifiedBy(modifiedBy);
+
+        return examRepository.saveAndFlush(exam);
+    }
+
+    @Override
+    public Exam warnExam(Long id) throws ParseException {
+        Exam exam = examRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.ExamConstant.EXAM_NOT_FOUND));
+
+        if (!exam.getIsWarning()) {
+            exam.setIsWarning(true);
+        } else if (exam.getIsWarning()) {
+            exam.setIsWarning(false);
+        }
 
         return examRepository.saveAndFlush(exam);
     }
@@ -298,11 +326,128 @@ public class ExamServiceImpl implements ExamService {
         return examRepository.saveAndFlush(exam);
     }
 
+        @Scheduled(cron = "0 0 8 * * ?")
+//    @Scheduled(cron = "0 * * * * ?")
+    public void sendMail() {
+        List<Exam> examList = examRepository.findAllByIsWarning(true);
+
+        Timestamp today = Timestamp.valueOf(LocalDate.now().atStartOfDay());
+
+        examList.forEach(exam -> {
+            Timestamp deadline = exam.getDeadline();
+
+            if(deadline.after(today)){
+                exam.setIsWarning(false);
+                examRepository.saveAndFlush(exam);
+            }else {
+                // Tính toán sự chênh lệch thời gian
+                LocalDateTime todayLocalDateTime = today.toLocalDateTime();
+                LocalDateTime dealineLocalDateTime = deadline.toLocalDateTime();
+
+                Duration duration = Duration.between(dealineLocalDateTime, todayLocalDateTime );
+                int daysBetween = (int) duration.toDays();  // Lấy số ngày
+
+                switch (daysBetween) {
+                    case 2 -> sendEmailHtml(exam, "ngày kia");
+                    case 1 -> sendEmailHtml(exam, "ngày mai");
+                    case 0 -> {
+                        sendEmailHtml(exam, "hôm nay");
+                        exam.setIsWarning(false);
+                        examRepository.saveAndFlush(exam);
+                    }
+                }
+            }
+
+
+        });
+
+    }
+
     private List<Integer> createLessonSeries(Integer lessonStart, Integer lessonsTest) {
         List<Integer> lessonSeries = new ArrayList<>();
         for (Integer i = lessonStart; i < (lessonStart + lessonsTest); i++) {
             lessonSeries.add(i);
         }
         return lessonSeries;
+    }
+
+    public void sendEmailHtml(Exam exam, String deadline) {
+        MimeMessage message = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
+
+        String subject = "Bạn có cảnh báo nộp điểm";
+        String htmlContent = "<!DOCTYPE html>" +
+                "<html>" +
+                "<head>" +
+                "<style>" +
+                "body {" +
+                "    font-family: Arial, sans-serif;" +
+                "    margin: 0;" +
+                "    padding: 0;" +
+                "}" +
+                ".container {" +
+                "    max-width: 500px;" +
+                "    margin: 0 auto;" +
+                "    justify-content: center;" +
+                "    align-items: center;" +
+                "}" +
+                ".title {" +
+                "    text-align: center;" +
+                "    margin: 0 auto;" +
+                "}" +
+                ".button {" +
+                "    background-color: #00984F;" +
+                "    border: none;" +
+                "    color: white;" +
+                "    padding: 15px 32px;" +
+                "    text-align: center;" +
+                "    text-decoration: none;" +
+                "    display: inline-block;" +
+                "    font-size: 16px;" +
+                "    margin: 4px 2px;" +
+                "    cursor: pointer;" +
+                "    border-radius: 8px;" +
+                "    transition: background-color 0.3s;" +
+                "}" +
+                ".button:hover {" +
+                "    background-color: #00532B;" +
+                "}" +
+                "h1 {" +
+                "    color: #333;" +
+                "}" +
+                "p {" +
+                "    color: #555;" +
+                "    margin: 0 20px;" +
+                "    font-size: 15px;" +
+                "}" +
+                "hr {" +
+                "    margin: 0 10px;" +
+                "}" +
+                "</style>" +
+                "</head>" +
+                "<body>" +
+                "<div class='container'>" +
+                "<div class='title'>" +
+                "<h1>Sắp đến hạn nộp điểm</h1>" +
+                "</div>" +
+                "<div class='content'>" +
+                "<p>"+ deadline.toUpperCase() +" là hạn cuối để nộp điểm cho môn thi có thông tin như sau:</p>" +
+                "<p>Mã môn thi: "+exam.getSubject().getId()+"</p>" +
+                "<p>Tên môn thi: "+exam.getSubject().getName()+"</p>" +
+                "<p>Nhóm: "+exam.getExamGroup()+ " - Tổ: "+exam.getCluster()+"</p>" +
+                "<p>Học kỳ "+exam.getTerm()+ " - Năm học: "+exam.getSchoolYear().getName()+"</p>" +
+                "</div>" +
+                "</div>" +
+                "</body>" +
+                "</html>";
+
+        try {
+            helper.setTo(exam.getLecturerTeach().getEmail());
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+            javaMailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Lỗi gửi email: " + e.getMessage());
+        }
     }
 }

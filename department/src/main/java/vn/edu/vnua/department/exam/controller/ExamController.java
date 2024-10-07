@@ -66,6 +66,12 @@ public class ExamController extends BaseController {
         return buildItemResponse(response);
     }
 
+    @PostMapping("warn/{id}")
+    private ResponseEntity<?> warnExam(@PathVariable Long id) throws ParseException {
+        ExamDTO response = modelMapper.map(examService.warnExam(id), ExamDTO.class);
+        return buildItemResponse(response);
+    }
+
     @PostMapping("delete/{id}")
     private ResponseEntity<?> deleteExam(@PathVariable Long id) {
         ExamDTO response = modelMapper.map(examService.deleteExam(id), ExamDTO.class);

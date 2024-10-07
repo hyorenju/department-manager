@@ -43,6 +43,7 @@ public class StoreTeachingWorker implements Callable<TeachingExcelData> {
             String subjectId = infoList[3].strip();
             String teachingGroup = infoList[4].strip();
             String classId = infoList[5].strip();
+//            String deadlineStr = infoList[6].strip();
 
             MasterData schoolYear = masterDataRepository.findByName(schoolYearName);
             User teacher = userRepository.getUserById(userId);
@@ -56,8 +57,10 @@ public class StoreTeachingWorker implements Callable<TeachingExcelData> {
                     .classId(classId)
                     .teachingGroup(StringUtils.hasText(teachingGroup) ? MyUtils.parseIntegerFromString(teachingGroup) : null)
                     .status(Constants.UploadFileStatusConstant.INCOMPLETE)
+//                    .deadline(MyUtils.convertTimestampFromExcel(deadlineStr))
                     .createdAt(Timestamp.valueOf(LocalDateTime.now()))
                     .createdBy(createdBy)
+//                    .isWarning(true)
                     .isLock(false)
                     .build();
 

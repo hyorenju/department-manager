@@ -28,6 +28,7 @@ import vn.edu.vnua.department.util.MyUtils;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,7 +73,7 @@ public class TeachingServiceImpl implements TeachingService {
     }
 
     @Override
-    public Teaching createTeaching(CreateTeachingRequest request) {
+    public Teaching createTeaching(CreateTeachingRequest request) throws ParseException {
         User teacher = userRepository.findById(request.getTeacher().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User createdBy = userRepository.getUserById(authentication.getPrincipal().toString());
@@ -105,8 +106,10 @@ public class TeachingServiceImpl implements TeachingService {
                 .componentFile(request.getComponentFile())
                 .summaryFile(request.getSummaryFile())
                 .status(status)
+//                .deadline(MyUtils.convertTimestampFromString(request.getDeadline()))
                 .createdAt(Timestamp.valueOf(LocalDateTime.now()))
                 .createdBy(createdBy)
+//                .isWarning(true)
                 .isLock(false)
                 .build());
     }
@@ -167,10 +170,23 @@ public class TeachingServiceImpl implements TeachingService {
             throw new RuntimeException(Constants.InternConstant.CANNOT_LOCK);
         }
 
-        if(!teaching.getIsLock()){
+        if (!teaching.getIsLock()) {
             teaching.setIsLock(true);
-        } else if (teaching.getIsLock()){
+        } else if (teaching.getIsLock()) {
             teaching.setIsLock(false);
+        }
+
+        return teachingRepository.saveAndFlush(teaching);
+    }
+
+    @Override
+    public Teaching warnTeaching(Long id) {
+        Teaching teaching = teachingRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.TeachingConstant.TEACHING_NOT_FOUND));
+
+        if (!teaching.getIsWarning()) {
+            teaching.setIsWarning(true);
+        } else if (teaching.getIsWarning()) {
+            teaching.setIsWarning(false);
         }
 
         return teachingRepository.saveAndFlush(teaching);
@@ -183,7 +199,7 @@ public class TeachingServiceImpl implements TeachingService {
 
         Boolean isLock = request.getWantLock();
 
-        for (Teaching teaching:
+        for (Teaching teaching :
                 teachingList) {
             teaching.setIsLock(isLock);
         }
@@ -238,15 +254,15 @@ public class TeachingServiceImpl implements TeachingService {
         if (month <= 5) {
             term = 2;
             termId = (year - 1) + term + "";
-            schoolYearName = (year-1) + "-" + year;
+            schoolYearName = (year - 1) + "-" + year;
         } else if (month <= 8) {
             term = 3;
             termId = (year - 1) + term + "";
-            schoolYearName = (year-1) + "-" + year;
+            schoolYearName = (year - 1) + "-" + year;
         } else {
             term = 1;
             termId = year + term + "";
-            schoolYearName = (year) + "-" + (year+1);
+            schoolYearName = (year) + "-" + (year + 1);
         }
         String time = "Học kỳ " + term + " - Năm học " + schoolYearName;
 
@@ -266,7 +282,7 @@ public class TeachingServiceImpl implements TeachingService {
 //            int rowNum = document.select("table[class=body-table]").size();
             for (int i = 0; i < rowNum; i++) {
                 String subjectId = document.select("td[width=56px][align=center]").get(i).ownText();
-                Integer teachingGroup = MyUtils.parseIntegerFromString(document.select("td[width=35px][align=center]").get(i*5).ownText());
+                Integer teachingGroup = MyUtils.parseIntegerFromString(document.select("td[width=35px][align=center]").get(i * 5).ownText());
                 String classId = document.select("td[width=70px][align=center]").get(i).ownText();
 
                 if (teachingRepository.existsBySchoolYearIdAndTermAndSubjectIdAndClassIdAndTeachingGroup(schoolYear.getId(),
@@ -276,19 +292,43 @@ public class TeachingServiceImpl implements TeachingService {
                 int finalI = i;
                 Subject subject = subjectRepository.findById(subjectId).orElseThrow(() -> new RuntimeException("Có lỗi ở bản ghi thứ " + (finalI + 1) + ": " + Constants.SubjectConstant.SUBJECT_NOT_FOUND));
 
-                Teaching teaching = Teaching.builder()
-                        .subject(subject)
-                        .teacher(teacher)
-                        .classId(classId)
-                        .teachingGroup(teachingGroup)
-                        .schoolYear(schoolYear)
-                        .term(term)
-                        .createdAt(Timestamp.valueOf(LocalDateTime.now()))
-                        .createdBy(createdBy)
-                        .status(Constants.UploadFileStatusConstant.INCOMPLETE)
-                        .build();
 
-                teachingList.add(teaching);
+                if(teachingList.size() > 0) {
+                    for (Teaching aTeaching:
+                         teachingList) {
+                        if (!subjectId.equals(aTeaching.getSubject().getId()) ||
+                                !classId.equals(aTeaching.getClassId()) ||
+                                !teachingGroup.equals(aTeaching.getTeachingGroup())) {
+
+                            Teaching teaching = Teaching.builder()
+                                    .subject(subject)
+                                    .teacher(teacher)
+                                    .classId(classId)
+                                    .teachingGroup(teachingGroup)
+                                    .schoolYear(schoolYear)
+                                    .term(term)
+                                    .createdAt(Timestamp.valueOf(LocalDateTime.now()))
+                                    .createdBy(createdBy)
+                                    .status(Constants.UploadFileStatusConstant.INCOMPLETE)
+                                    .build();
+                            teachingList.add(teaching);
+                        }
+                    }
+                } else {
+
+                    Teaching teaching = Teaching.builder()
+                            .subject(subject)
+                            .teacher(teacher)
+                            .classId(classId)
+                            .teachingGroup(teachingGroup)
+                            .schoolYear(schoolYear)
+                            .term(term)
+                            .createdAt(Timestamp.valueOf(LocalDateTime.now()))
+                            .createdBy(createdBy)
+                            .status(Constants.UploadFileStatusConstant.INCOMPLETE)
+                            .build();
+                    teachingList.add(teaching);
+                }
             }
         }
         return teachingRepository.saveAll(teachingList);

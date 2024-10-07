@@ -1,10 +1,9 @@
 package vn.edu.vnua.department.task.service;
 
-import org.springframework.data.domain.Page;
+import vn.edu.vnua.department.project.request.FilterProjectPage;
 import vn.edu.vnua.department.task.entity.Task;
 import vn.edu.vnua.department.task.request.CreateTaskRequest;
 import vn.edu.vnua.department.task.request.GetTaskListRequest;
-import vn.edu.vnua.department.task.request.UpdateTaskParticipantRequest;
 import vn.edu.vnua.department.task.request.UpdateTaskRequest;
 
 import java.text.ParseException;

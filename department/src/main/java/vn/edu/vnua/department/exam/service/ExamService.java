@@ -17,6 +17,7 @@ public interface ExamService {
     Page<Exam> getExamList(GetExamListRequest request);
     Exam createExam(CreateExamRequest request) throws ParseException;
     Exam updateExam(Long id, UpdateExamRequest request) throws ParseException;
+    Exam warnExam(Long id) throws ParseException;
     List<User> getUsersNotAssigned(Long id);
     List<User> getUsersNotAssigned(GetUsersNotAssignedRequest request) throws ParseException;
     Exam deleteExam(Long id);

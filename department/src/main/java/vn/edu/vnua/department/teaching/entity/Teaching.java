@@ -55,6 +55,12 @@ public class Teaching {
     @Column(name = "status", length = 200)
     private String status;
 
+    @Column(name = "deadline")
+    private Timestamp deadline;
+
+    @Column(name = "is_warning")
+    private Boolean isWarning;
+
     @Column(name = "created_at")
     private Timestamp createdAt;
 
@@ -82,6 +88,9 @@ public class Teaching {
         if (!ImportTeachingValidator.validateNaturalNum(teachingGroup)) {
             errorDetailList.add(TeachingExcelData.ErrorDetail.builder().columnIndex(4).errorMsg("NMH không hợp lệ").build());
         }
+//        if (!ImportTeachingValidator.validateDeadline(deadline)) {
+//            errorDetailList.add(TeachingExcelData.ErrorDetail.builder().columnIndex(6).errorMsg("Dạng dd/MM/yyyy").build());
+//        }
         return errorDetailList;
     }
 }
