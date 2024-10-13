@@ -10,7 +10,7 @@ import vn.edu.vnua.department.masterdata.entity.MasterData;
 import vn.edu.vnua.department.masterdata.repository.MasterDataRepository;
 import vn.edu.vnua.department.project.entity.Project;
 import vn.edu.vnua.department.project.repository.ProjectRepository;
-import vn.edu.vnua.department.project.request.FilterProjectPage;
+import vn.edu.vnua.department.service.mail.MailService;
 import vn.edu.vnua.department.task.entity.Task;
 import vn.edu.vnua.department.task.repository.CustomTaskRepository;
 import vn.edu.vnua.department.task.repository.TaskRepository;
@@ -37,6 +37,7 @@ public class TaskServiceImpl implements TaskService {
     private final ProjectRepository projectRepository;
     private final MasterDataRepository masterDataRepository;
     private final UserTaskRepository userTaskRepository;
+    private final MailService mailService;
 
     @Override
     public List<Task> getTaskList(GetTaskListRequest request) {
@@ -92,11 +93,13 @@ public class TaskServiceImpl implements TaskService {
         List<UserTask> userTasks = new ArrayList<>();
         for (String userId :
                 request.getUserIds()) {
+            User user = userRepository.getUserById(userId);
             UserTask userTask = new UserTask();
             userTask.setTask(task);
-            userTask.setUser(User.builder().id(userId).build());
+            userTask.setUser(user);
             userTask.setPersonalStatus(doingStatus);
             userTasks.add(userTask);
+            mailService.sendMemberJoinTaskMail(task, user);
         }
         userTaskRepository.saveAll(userTasks);
 

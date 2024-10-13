@@ -27,6 +27,7 @@ import vn.edu.vnua.department.masterdata.repository.MasterDataRepository;
 import vn.edu.vnua.department.masterdata.request.GetUsersNotAssignedRequest;
 import vn.edu.vnua.department.security.JwtTokenProvider;
 import vn.edu.vnua.department.service.excel.ExcelService;
+import vn.edu.vnua.department.service.mail.MailService;
 import vn.edu.vnua.department.subject.entity.Subject;
 import vn.edu.vnua.department.subject.repository.SubjectRepository;
 import vn.edu.vnua.department.teaching.entity.Teaching;
@@ -53,7 +54,7 @@ public class ExamServiceImpl implements ExamService {
     private final MasterDataRepository masterDataRepository;
     private final SubjectRepository subjectRepository;
     private final ExcelService excelService;
-    private final JavaMailSender javaMailSender;
+    private final MailService mailService;
 
     @Override
     public Page<Exam> getExamList(GetExamListRequest request) {
@@ -348,10 +349,10 @@ public class ExamServiceImpl implements ExamService {
                 int daysBetween = (int) duration.toDays();  // Lấy số ngày
 
                 switch (daysBetween) {
-                    case 2 -> sendEmailHtml(exam, "ngày kia");
-                    case 1 -> sendEmailHtml(exam, "ngày mai");
+                    case 2 -> mailService.sendExamWarningMail(exam, "ngày kia");
+                    case 1 -> mailService.sendExamWarningMail(exam, "ngày mai");
                     case 0 -> {
-                        sendEmailHtml(exam, "hôm nay");
+                        mailService.sendExamWarningMail(exam, "hôm nay");
                         exam.setIsWarning(false);
                         examRepository.saveAndFlush(exam);
                     }
@@ -369,85 +370,5 @@ public class ExamServiceImpl implements ExamService {
             lessonSeries.add(i);
         }
         return lessonSeries;
-    }
-
-    public void sendEmailHtml(Exam exam, String deadline) {
-        MimeMessage message = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
-
-        String subject = "Bạn có cảnh báo nộp điểm";
-        String htmlContent = "<!DOCTYPE html>" +
-                "<html>" +
-                "<head>" +
-                "<style>" +
-                "body {" +
-                "    font-family: Arial, sans-serif;" +
-                "    margin: 0;" +
-                "    padding: 0;" +
-                "}" +
-                ".container {" +
-                "    max-width: 500px;" +
-                "    margin: 0 auto;" +
-                "    justify-content: center;" +
-                "    align-items: center;" +
-                "}" +
-                ".title {" +
-                "    text-align: center;" +
-                "    margin: 0 auto;" +
-                "}" +
-                ".button {" +
-                "    background-color: #00984F;" +
-                "    border: none;" +
-                "    color: white;" +
-                "    padding: 15px 32px;" +
-                "    text-align: center;" +
-                "    text-decoration: none;" +
-                "    display: inline-block;" +
-                "    font-size: 16px;" +
-                "    margin: 4px 2px;" +
-                "    cursor: pointer;" +
-                "    border-radius: 8px;" +
-                "    transition: background-color 0.3s;" +
-                "}" +
-                ".button:hover {" +
-                "    background-color: #00532B;" +
-                "}" +
-                "h1 {" +
-                "    color: #333;" +
-                "}" +
-                "p {" +
-                "    color: #555;" +
-                "    margin: 0 20px;" +
-                "    font-size: 15px;" +
-                "}" +
-                "hr {" +
-                "    margin: 0 10px;" +
-                "}" +
-                "</style>" +
-                "</head>" +
-                "<body>" +
-                "<div class='container'>" +
-                "<div class='title'>" +
-                "<h1>Sắp đến hạn nộp điểm</h1>" +
-                "</div>" +
-                "<div class='content'>" +
-                "<p>"+ deadline.toUpperCase() +" là hạn cuối để nộp điểm cho môn thi có thông tin như sau:</p>" +
-                "<p>Mã môn thi: "+exam.getSubject().getId()+"</p>" +
-                "<p>Tên môn thi: "+exam.getSubject().getName()+"</p>" +
-                "<p>Nhóm: "+exam.getExamGroup()+ " - Tổ: "+exam.getCluster()+"</p>" +
-                "<p>Học kỳ "+exam.getTerm()+ " - Năm học: "+exam.getSchoolYear().getName()+"</p>" +
-                "</div>" +
-                "</div>" +
-                "</body>" +
-                "</html>";
-
-        try {
-            helper.setTo(exam.getLecturerTeach().getEmail());
-            helper.setSubject(subject);
-            helper.setText(htmlContent, true);
-            javaMailSender.send(message);
-        } catch (MessagingException e) {
-            throw new RuntimeException("Lỗi gửi email: " + e.getMessage());
-        }
     }
 }

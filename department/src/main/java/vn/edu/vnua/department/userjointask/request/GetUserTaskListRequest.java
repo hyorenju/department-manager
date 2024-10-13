@@ -8,6 +8,7 @@ public class GetUserTaskListRequest {
     private String userId;
     private Integer monthCalendar;
     private Integer yearCalendar;
+    private Boolean isUpdateParticipant;
 
     //For schedule
     private Boolean isSchedule;

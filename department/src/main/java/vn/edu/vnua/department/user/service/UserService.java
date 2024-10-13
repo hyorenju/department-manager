@@ -15,7 +15,7 @@ import java.util.concurrent.ExecutionException;
 public interface UserService {
     Page<User> getUserList(GetUserListRequest request);
     List<User> getUserSelection(GetUserSelectionRequest request);
-    List<User> getUserOption();
+    List<User> getUserOption(GetUserListPickRequest request);
     User createUser(CreateUserRequest request);
     User updateUser(String id, UpdateUserRequest request);
     User updateProfile(UpdateProfileRequest request);

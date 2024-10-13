@@ -1,4 +1,4 @@
-package vn.edu.vnua.department.service;
+package vn.edu.vnua.department.model.authentication;
 
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;

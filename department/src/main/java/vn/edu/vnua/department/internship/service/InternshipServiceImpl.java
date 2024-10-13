@@ -96,12 +96,6 @@ public class InternshipServiceImpl implements InternshipService {
 
     @Override
     public Internship updateIntern(Long id, UpdateInternshipRequest request) {
-        if(internshipRepository.existsBySchoolYearIdAndTermAndStudentIdAndName(
-                request.getSchoolYear().getId(), request.getTerm(), request.getStudentId(), request.getName()
-        )){
-            throw new RuntimeException(Constants.InternshipConstant.INTERNSHIP_EXISTED);
-        }
-
         Internship internship = internshipRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.InternshipConstant.INTERNSHIP_NOT_FOUND));
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

@@ -43,8 +43,8 @@ public class UserController extends BaseController {
     }
 
     @PostMapping("pick")
-    public ResponseEntity<?> getUsersOption() {
-        List<UserDTO> response = userService.getUserOption().stream().map(
+    public ResponseEntity<?> getUsersOption(@RequestBody GetUserListPickRequest request) {
+        List<UserDTO> response = userService.getUserOption(request).stream().map(
                 user -> modelMapper.map(user, UserDTO.class)
         ).toList();
         return buildListItemResponse(response, response.size());

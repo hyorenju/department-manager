@@ -20,10 +20,13 @@ import vn.edu.vnua.department.role.entity.Role;
 import vn.edu.vnua.department.role.repository.RoleRepository;
 import vn.edu.vnua.department.service.excel.ExcelService;
 import vn.edu.vnua.department.service.firebase.FirebaseService;
+import vn.edu.vnua.department.task.entity.Task;
+import vn.edu.vnua.department.task.repository.TaskRepository;
 import vn.edu.vnua.department.user.entity.User;
 import vn.edu.vnua.department.user.repository.CustomUserRepository;
 import vn.edu.vnua.department.user.repository.UserRepository;
 import vn.edu.vnua.department.user.request.*;
+import vn.edu.vnua.department.userjointask.entity.UserTask;
 
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -44,6 +47,7 @@ public class UserServiceImpl implements UserService {
     private final MasterDataRepository masterDataRepository;
     private final ExcelService excelService;
     private final FirebaseService firebaseService;
+    private final TaskRepository taskRepository;
 
     @Override
     public Page<User> getUserList(GetUserListRequest request) {
@@ -67,11 +71,21 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> getUserOption() {
+    public List<User> getUserOption(GetUserListPickRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User me = userRepository.getUserById(authentication.getPrincipal().toString());
 
-        return userRepository.findAllByDepartment(me.getDepartment());
+        List<User> users = userRepository.findAllByDepartment(me.getDepartment());
+
+        if (request.getIsUpdateParticipant()) {
+            Task task = taskRepository.findById(request.getTaskId()).orElseThrow(() -> new RuntimeException(Constants.TaskConstant.TASK_NOT_FOUND));
+            List<UserTask> userJoined = task.getUserJoined();
+            userJoined.forEach(userTask -> {
+                users.remove(userTask.getUser());
+            });
+        }
+
+        return users;
     }
 
     @Override
@@ -177,7 +191,7 @@ public class UserServiceImpl implements UserService {
             if (user.getRole().getId().equals(Constants.RoleIdConstant.MANAGER) ||
                     user.getRole().getId().equals(Constants.RoleIdConstant.DEPUTY)) {
                 if (manager.getDepartment() != user.getDepartment() &&
-                !manager.getRole().getId().equals(Constants.RoleIdConstant.ADMIN) &&
+                        !manager.getRole().getId().equals(Constants.RoleIdConstant.ADMIN) &&
                         !manager.getRole().getId().equals(Constants.RoleIdConstant.DEAN)) {
                     throw new RuntimeException(Constants.UserConstant.CANNOT_MANAGE_ANOTHER_DEPARTMENT);
                 }
@@ -215,9 +229,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public User updateProfile(UpdateProfileRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User me = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(()->new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+        User me = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
 
-        MasterData degree = masterDataRepository.findById(request.getDegree().getId()).orElseThrow(()-> new RuntimeException(Constants.MasterDataConstant.DEGREE_NOT_FOUND));
+        MasterData degree = masterDataRepository.findById(request.getDegree().getId()).orElseThrow(() -> new RuntimeException(Constants.MasterDataConstant.DEGREE_NOT_FOUND));
 
         me.setFirstName(request.getFirstName());
         me.setLastName(request.getLastName());
@@ -248,7 +262,7 @@ public class UserServiceImpl implements UserService {
         User receiver = userRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
         Role lecturer = roleRepository.findById(Constants.RoleIdConstant.LECTURER).orElseThrow(() -> new RuntimeException(Constants.RoleConstant.ROLE_NOT_FOUND));
 
-        if(receiver.getDepartment()!=giver.getDepartment()){
+        if (receiver.getDepartment() != giver.getDepartment()) {
             throw new RuntimeException(Constants.UserConstant.USER_IN_OTHER_DEPARTMENTS);
         }
 
@@ -291,20 +305,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User changePassword(ChangePasswordRequest request) {
-        Authentication authentication =  SecurityContextHolder.getContext().getAuthentication();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User me = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
 
-        if(!encoder.matches(request.getCurrentPassword(), me.getPassword())){
+        if (!encoder.matches(request.getCurrentPassword(), me.getPassword())) {
             throw new RuntimeException(Constants.PasswordConstant.WRONG_OLD_PASSWORD);
         }
         Pattern pattern = Pattern.compile(Constants.PasswordConstant.PASSWORD_REGEX);
-        if(!pattern.matcher(request.getNewPassword()).matches()) {
+        if (!pattern.matcher(request.getNewPassword()).matches()) {
             throw new RuntimeException(Constants.PasswordConstant.WRONG_PASSWORD_REGEX);
         }
-        if(encoder.matches(request.getNewPassword(), me.getPassword())){
+        if (encoder.matches(request.getNewPassword(), me.getPassword())) {
             throw new RuntimeException(Constants.PasswordConstant.NOT_BE_SAME_OLD_PASSWORD);
         }
-        if(!Objects.equals(request.getNewPassword(), request.getConfirmPassword())){
+        if (!Objects.equals(request.getNewPassword(), request.getConfirmPassword())) {
             throw new RuntimeException(Constants.PasswordConstant.BE_SAME_NEW_PASSWORD);
         }
 
@@ -316,9 +330,9 @@ public class UserServiceImpl implements UserService {
     public User lockAccount(String id) {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
 
-        if(!user.getIsLock()){
+        if (!user.getIsLock()) {
             user.setIsLock(true);
-        } else if (user.getIsLock()){
+        } else if (user.getIsLock()) {
             user.setIsLock(false);
         }
 

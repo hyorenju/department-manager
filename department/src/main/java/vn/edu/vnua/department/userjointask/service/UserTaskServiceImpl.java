@@ -15,6 +15,7 @@ import vn.edu.vnua.department.masterdata.repository.MasterDataRepository;
 import vn.edu.vnua.department.project.entity.Project;
 import vn.edu.vnua.department.project.repository.ProjectRepository;
 import vn.edu.vnua.department.project.request.FilterProjectPage;
+import vn.edu.vnua.department.service.mail.MailService;
 import vn.edu.vnua.department.task.entity.Task;
 import vn.edu.vnua.department.task.repository.TaskRepository;
 import vn.edu.vnua.department.user.entity.User;
@@ -38,6 +39,7 @@ public class UserTaskServiceImpl implements UserTaskService {
     private final MasterDataRepository masterDataRepository;
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
+    private final MailService mailService;
 
     @Override
     public List<UserTask> getUserTaskList(GetUserTaskListRequest request) {
@@ -98,13 +100,14 @@ public class UserTaskServiceImpl implements UserTaskService {
 
         for (String userId :
                 request.getUserIds()) {
-            User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+            User user = userRepository.getUserById(userId);
             userTasks.add(UserTask.builder()
                     .task(task)
                     .user(user)
                     .personalStatus(masterDataRepository.findAllByType(Constants.MasterDataTypeConstant.TASK_STATUS, Sort.by("id").ascending()).get(0))
                     .finishedAt(null)
                     .build());
+            mailService.sendMemberJoinTaskMail(task, user);
         }
 
         List<UserTask> userTasksDelete = userTaskRepository.findAllByTask(task);
