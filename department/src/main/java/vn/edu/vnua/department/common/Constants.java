@@ -189,4 +189,24 @@ public interface Constants {
         String CANNOT_UPDATE = "Chỉ người tạo dự án mới có thể chỉnh sửa chi tiết công việc";
         String USER_TASK_NOT_FOUND = "Không tìm thấy chi tiết công việc";
     }
+
+    interface FilePathConstant{
+        String USER_IMPORT_FILE = "upload/danh-sach-giang-vien.xlsx";
+        String USER_ERROR_FILE = "upload/loi-import-nguoi-dung.xlsx";
+
+        String CLASS_IMPORT_FILE = "upload/danh-sach-lop.xlsx";
+        String CLASS_ERROR_FILE = "upload/loi-import-ds-lop.xlsx";
+
+        String SUBJECT_IMPORT_FILE = "upload/danh-sach-mon-hoc.xlsx";
+        String SUBJECT_ERROR_FILE = "upload/loi-import-ds-mon-hoc.xlsx";
+
+        String INTERN_IMPORT_FILE = "upload/danh-sach-de-tai-thuc-tap.xlsx";
+        String INTERN_ERROR_FILE = "upload/loi-import-de-tai-thuc-tap.xlsx";
+
+        String TEACHING_IMPORT_FILE = "upload/danh-sach-giang-day.xlsx";
+        String TEACHING_ERROR_FILE = "upload/loi-import-phan-cong-giang-day.xlsx";
+
+        String EXAM_IMPORT_FILE = "upload/danh-sach-ky-thi.xlsx";
+        String EXAM_ERROR_FILE = "upload/loi-import-phan-cong-ky-thi.xlsx";
+    }
 }
