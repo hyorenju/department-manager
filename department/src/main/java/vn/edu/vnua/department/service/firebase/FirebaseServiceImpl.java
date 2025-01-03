@@ -25,22 +25,26 @@ public class FirebaseServiceImpl implements FirebaseService{
 
     @Override
     public String uploadMultipartFile(MultipartFile file) throws IOException {
-        // Tạo một tên file
-        String originalFileName = file.getOriginalFilename();
-        String fileName = UUID.randomUUID() + getFileExtension(originalFileName);
+        try {
+            // Tạo một tên file
+            String originalFileName = file.getOriginalFilename();
+            String fileName = UUID.randomUUID() + getFileExtension(originalFileName);
 
-        // Nhận storage service
-        StorageOptions storageOptions = StorageOptions.newBuilder().setCredentials(firebaseConfig.getCredentials()).build();
-        Storage storage = storageOptions.getService();
+            // Nhận storage service
+            StorageOptions storageOptions = StorageOptions.newBuilder().setCredentials(firebaseConfig.getCredentials()).build();
+            Storage storage = storageOptions.getService();
 
-        // Tải lên tệp tin vào Firebase Storage
-        BlobId blobId = BlobId.of(bucketName, fileName);
-        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(file.getContentType()).build();
-        InputStream inputStream = file.getInputStream();
+            // Tải lên tệp tin vào Firebase Storage
+            BlobId blobId = BlobId.of(bucketName, fileName);
+            BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(file.getContentType()).build();
+            InputStream inputStream = file.getInputStream();
 
-        // Upload file và lấy URL
-        Blob blob = storage.create(blobInfo, inputStream);
-        return blob.signUrl(Constants.FirebaseConstant.EXPIRATION_TIME, TimeUnit.MILLISECONDS).toString();
+            // Upload file và lấy URL
+            Blob blob = storage.create(blobInfo, inputStream);
+            return blob.signUrl(Constants.FirebaseConstant.EXPIRATION_TIME, TimeUnit.MILLISECONDS).toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
     @Override

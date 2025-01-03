@@ -55,6 +55,9 @@ public class CustomInternshipRepository {
             } else if (StringUtils.hasText(request.getFacultyId())){
                 predicates.add(criteriaBuilder.like(root.get("instructor").get("department").get("faculty").get("id"), request.getFacultyId()));
             }
+            if (StringUtils.hasText(request.getNote())){
+                predicates.add(criteriaBuilder.like(root.get("note"), "%" + request.getNote() + "%"));
+            }
 
             query.orderBy(
                     criteriaBuilder.desc(root.get("createdAt")),
@@ -106,6 +109,9 @@ public class CustomInternshipRepository {
                 predicates.add(criteriaBuilder.like(root.get("instructor").get("department").get("id"), request.getDepartmentId()));
             } else if (StringUtils.hasText(request.getFacultyId())){
                 predicates.add(criteriaBuilder.like(root.get("instructor").get("department").get("faculty").get("id"), request.getFacultyId()));
+            }
+            if (StringUtils.hasText(request.getNote())){
+                predicates.add(criteriaBuilder.like(root.get("note"), "%" + request.getNote() + "%"));
             }
 
             query.orderBy(

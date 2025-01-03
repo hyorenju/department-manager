@@ -16,4 +16,5 @@ public class GetTeachingListRequest extends GetPageBaseRequest {
     private String teacherId;
     private String classId;
     private String status;
+    private String note;
 }

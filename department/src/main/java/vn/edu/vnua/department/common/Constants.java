@@ -2,7 +2,7 @@ package vn.edu.vnua.department.common;
 
 public interface Constants {
     interface RoleIdConstant {
-        String ADMIN = "ADMIN";
+        String ADMIN = "PRINCIPAL";
         String DEAN = "DEAN";
         String MANAGER = "MANAGER";
         String DEPUTY = "DEPUTY";
@@ -19,6 +19,7 @@ public interface Constants {
         String MONTH_YEAR_FORMAT = "MM/yyyy";
         String DATE_TIME_FORMAT = "dd/MM/yyyy HH:mm:ss";
         String TIME_ZONE = "Asia/Ho_Chi_Minh";
+        String MONTH_DATE_YEAR = "MM/dd/yyyy";
     }
 
     interface RoleConstant {
@@ -58,6 +59,7 @@ public interface Constants {
         String NAME_REGEX = "^[\\p{L}\\s]*$";
         String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
         String PHONE_NUMBER_REGEX = "^(0?)(3[2-9]|5[6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])[0-9]{7}$";
+        String CANNOT_CHANGE_DEPARTMENT = "Không thể đổi bộ môn cho người đang nắm giữ chức vụ";
     }
 
     interface AuthenticationConstant {
@@ -105,7 +107,7 @@ public interface Constants {
         String INTERNSHIP_EXISTED = "Những thông tin của bản ghi này đang bị trùng với một bản ghi đã tồn tại";
         String INTERNSHIP_NOT_FOUND = "Không tìm thấy bản ghi đề tài thực tập";
         String CANNOT_UPDATE = "Bạn chỉ có thể sửa, xóa nếu bạn là giáo viên hướng dẫn của đề tài này";
-        String TOPIC_NAME_REGEX = "^[\\p{L}\\d\\s.,;…\\-\"()\\[\\]{}&]*$";
+        String TOPIC_NAME_REGEX = "^[\\p{L}\\d\\s.,;:…\\/\\-\"()\\[\\]{}&]*$";
     }
 
     interface StudentConstant {
@@ -140,6 +142,7 @@ public interface Constants {
         String TEACHING_NOT_FOUND = "Không tìm thấy bản ghi giảng dạy";
         String TEACHING_IS_EXISTED = "Bản ghi giảng dạy này đã tồn tại";
         String CANNOT_UPDATE = "Bạn không thể thêm, sửa, xóa bản ghi giảng dạy của giảng viên khác";
+        String CANNOT_CHANGE_TEACHER = "Bạn không có quyền thay đổi giáo viên giảng dạy";
     }
 
     interface ExamConstant{
@@ -191,22 +194,22 @@ public interface Constants {
     }
 
     interface FilePathConstant{
-        String USER_IMPORT_FILE = "upload/danh-sach-giang-vien.xlsx";
-        String USER_ERROR_FILE = "upload/loi-import-nguoi-dung.xlsx";
+        String USER_IMPORT_FILE = "danh-sach-giang-vien.xlsx";
+        String USER_ERROR_FILE = "loi-import-nguoi-dung.xlsx";
 
-        String CLASS_IMPORT_FILE = "upload/danh-sach-lop.xlsx";
-        String CLASS_ERROR_FILE = "upload/loi-import-ds-lop.xlsx";
+        String CLASS_IMPORT_FILE = "danh-sach-lop.xlsx";
+        String CLASS_ERROR_FILE = "loi-import-ds-lop.xlsx";
 
-        String SUBJECT_IMPORT_FILE = "upload/danh-sach-mon-hoc.xlsx";
-        String SUBJECT_ERROR_FILE = "upload/loi-import-ds-mon-hoc.xlsx";
+        String SUBJECT_IMPORT_FILE = "danh-sach-mon-hoc.xlsx";
+        String SUBJECT_ERROR_FILE = "loi-import-ds-mon-hoc.xlsx";
 
-        String INTERN_IMPORT_FILE = "upload/danh-sach-de-tai-thuc-tap.xlsx";
-        String INTERN_ERROR_FILE = "upload/loi-import-de-tai-thuc-tap.xlsx";
+        String INTERN_IMPORT_FILE = "danh-sach-de-tai-thuc-tap.xlsx";
+        String INTERN_ERROR_FILE = "loi-import-de-tai-thuc-tap.xlsx";
 
-        String TEACHING_IMPORT_FILE = "upload/danh-sach-giang-day.xlsx";
-        String TEACHING_ERROR_FILE = "upload/loi-import-phan-cong-giang-day.xlsx";
+        String TEACHING_IMPORT_FILE = "danh-sach-giang-day.xlsx";
+        String TEACHING_ERROR_FILE = "loi-import-phan-cong-giang-day.xlsx";
 
-        String EXAM_IMPORT_FILE = "upload/danh-sach-ky-thi.xlsx";
-        String EXAM_ERROR_FILE = "upload/loi-import-phan-cong-ky-thi.xlsx";
+        String EXAM_IMPORT_FILE = "danh-sach-ky-thi.xlsx";
+        String EXAM_ERROR_FILE = "loi-import-phan-cong-ky-thi.xlsx";
     }
 }

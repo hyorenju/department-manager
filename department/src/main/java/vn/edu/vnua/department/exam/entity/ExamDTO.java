@@ -15,6 +15,7 @@ import vn.edu.vnua.department.user.entity.UserBasicDTO;
 import vn.edu.vnua.department.user.entity.UserDTO;
 
 import java.sql.Timestamp;
+
 @Data
 public class ExamDTO {
     private Long id;
@@ -30,8 +31,9 @@ public class ExamDTO {
     private String testRoom;
     private Integer lessonStart;
     private Integer lessonsTest;
-    private UserBasicDTO lecturerTeach;
-    @JsonFormat(pattern = Constants.DateTimeConstants.DATE_FORMAT, timezone = Constants.DateTimeConstants.TIME_ZONE)
+    private UserDTO lecturerTeach;
+    //    @JsonFormat(pattern = Constants.DateTimeConstants.DATE_FORMAT, timezone = Constants.DateTimeConstants.TIME_ZONE)
+    @JsonFormat(pattern = Constants.DateTimeConstants.YEAR_MONTH_DAY_FORMAT, timezone = Constants.DateTimeConstants.TIME_ZONE)
     private Timestamp deadline;
     private Boolean isWarning;
     private UserBasicDTO proctor1;

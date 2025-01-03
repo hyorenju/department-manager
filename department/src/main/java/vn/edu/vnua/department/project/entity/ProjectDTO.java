@@ -20,5 +20,6 @@ public class ProjectDTO {
     private Timestamp start;
     @JsonFormat(pattern = Constants.DateTimeConstants.DATE_FORMAT, timezone = Constants.DateTimeConstants.TIME_ZONE)
     private Timestamp deadline;
+    private Boolean isPrivate;
     private MasterDataDTO projectStatus;
 }

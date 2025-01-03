@@ -34,3 +34,11 @@ build/
 
 ### Service Account Key ###
 !**/src/main/resources/serviceAccountKey.json
+
+docker-compose.yml
+.env
+.DS_Store
+.mvn/
+build.sh
+up.sh
+down.sh

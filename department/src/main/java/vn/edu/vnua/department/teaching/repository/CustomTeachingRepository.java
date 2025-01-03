@@ -27,9 +27,9 @@ public class CustomTeachingRepository {
                 predicates.add(criteriaBuilder.equal(root.get("term"), request.getTerm()));
             }
             if(StringUtils.hasText(request.getDepartmentId())){
-                predicates.add(criteriaBuilder.like(root.get("subject").get("department").get("id"), request.getDepartmentId()));
+                predicates.add(criteriaBuilder.like(root.get("teacher").get("department").get("id"), request.getDepartmentId()));
             } else if(StringUtils.hasText(request.getFacultyId())){
-                predicates.add(criteriaBuilder.like(root.get("subject").get("department").get("faculty").get("id"), request.getFacultyId()));
+                predicates.add(criteriaBuilder.like(root.get("teacher").get("department").get("faculty").get("id"), request.getFacultyId()));
             }
             if(StringUtils.hasText(request.getSubjectId())){
                 predicates.add(criteriaBuilder.like(root.get("subject").get("id"), "%" + request.getSubjectId() + "%"));
@@ -45,6 +45,9 @@ public class CustomTeachingRepository {
             }
             if (StringUtils.hasText(request.getStatus())){
                 predicates.add(criteriaBuilder.like(root.get("status"), request.getStatus()));
+            }
+            if (StringUtils.hasText(request.getNote())){
+                predicates.add(criteriaBuilder.like(root.get("note"), "%" + request.getNote() + "%"));
             }
             query.orderBy(
                     criteriaBuilder.desc(root.get("schoolYear").get("name")),
@@ -69,9 +72,12 @@ public class CustomTeachingRepository {
                 predicates.add(criteriaBuilder.equal(root.get("term"), request.getTerm()));
             }
             if(StringUtils.hasText(request.getDepartmentId())){
-                predicates.add(criteriaBuilder.like(root.get("subject").get("department").get("id"), request.getDepartmentId()));
+                predicates.add(criteriaBuilder.like(root.get("teacher").get("department").get("id"), request.getDepartmentId()));
             } else if(StringUtils.hasText(request.getFacultyId())){
-                predicates.add(criteriaBuilder.like(root.get("subject").get("department").get("faculty").get("id"), request.getFacultyId()));
+                predicates.add(criteriaBuilder.like(root.get("teacher").get("department").get("faculty").get("id"), request.getFacultyId()));
+            }
+            if(StringUtils.hasText(request.getSubjectId())){
+                predicates.add(criteriaBuilder.like(root.get("subject").get("id"), "%" + request.getSubjectId() + "%"));
             }
             if(StringUtils.hasText(request.getSubjectName())){
                 predicates.add(criteriaBuilder.like(root.get("subject").get("name"), "%" + request.getSubjectName() + "%"));
@@ -84,6 +90,9 @@ public class CustomTeachingRepository {
             }
             if (StringUtils.hasText(request.getStatus())){
                 predicates.add(criteriaBuilder.like(root.get("status"), request.getStatus()));
+            }
+            if (StringUtils.hasText(request.getNote())){
+                predicates.add(criteriaBuilder.like(root.get("note"), "%" + request.getNote() + "%"));
             }
             query.orderBy(
                     criteriaBuilder.desc(root.get("schoolYear").get("name")),

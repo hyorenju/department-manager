@@ -43,6 +43,9 @@ public class Project {
     @Column(name = "deadline")
     private Timestamp deadline;
 
+    @Column(name = "is_private")
+    private Boolean isPrivate;
+
     @ManyToOne
     @JoinColumn(name = "project_status")
     private MasterData projectStatus;

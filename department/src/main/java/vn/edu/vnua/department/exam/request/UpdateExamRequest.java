@@ -17,8 +17,10 @@ public class UpdateExamRequest {
 
     private CreateMasterDataRequest form;
 
-    @NotBlank(message = "Mã đề thi không được để trống")
     private String examCode;
+
+    @NotNull(message = "Hạn nộp điểm không được để trống")
+    private String deadline;
 
     private CreateUserRequest lecturerTeach;
 

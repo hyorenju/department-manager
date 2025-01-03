@@ -202,6 +202,17 @@ public class UserServiceImpl implements UserService {
                 }
             }
 
+            if(request.getDepartment()!=null){
+                if(!request.getDepartment().getId().equals(user.getDepartment().getId())) {
+                    if (!user.getRole().getId().equals(Constants.RoleIdConstant.LECTURER)) {
+                        throw new RuntimeException(Constants.UserConstant.CANNOT_CHANGE_DEPARTMENT);
+                    } else {
+                        Department department = departmentRepository.findById(request.getDepartment().getId()).orElseThrow(() -> new RuntimeException(Constants.DepartmentConstant.DEPARTMENT_NOT_FOUND));
+                        user.setDepartment(department);
+                    }
+                }
+            }
+
             //Sửa
             user.setFirstName(request.getFirstName());
             user.setLastName(request.getLastName());
@@ -211,6 +222,7 @@ public class UserServiceImpl implements UserService {
             user.setPassword(StringUtils.hasText(request.getPassword()) ? encoder.encode(request.getPassword()) : user.getPassword());
             user.setRole(role);
             user.setNote(request.getNote());
+
 
             //Set giá trị cho nơi quản lý (nếu có)
             switch (roleId) {
@@ -228,18 +240,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User updateProfile(UpdateProfileRequest request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User me = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            User me = userRepository.findById(authentication.getPrincipal().toString()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
 
-        MasterData degree = masterDataRepository.findById(request.getDegree().getId()).orElseThrow(() -> new RuntimeException(Constants.MasterDataConstant.DEGREE_NOT_FOUND));
+            MasterData degree = masterDataRepository.findById(request.getDegree().getId()).orElseThrow(() -> new RuntimeException(Constants.MasterDataConstant.DEGREE_NOT_FOUND));
 
-        me.setFirstName(request.getFirstName());
-        me.setLastName(request.getLastName());
-        me.setDegree(degree);
-        me.setEmail(request.getEmail());
-        me.setPhoneNumber(request.getPhoneNumber());
+            me.setFirstName(request.getFirstName());
+            me.setLastName(request.getLastName());
+            me.setDegree(degree);
+            me.setEmail(request.getEmail());
+            me.setPhoneNumber(request.getPhoneNumber());
 
-        return userRepository.saveAndFlush(me);
+            return userRepository.saveAndFlush(me);
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
     @Override

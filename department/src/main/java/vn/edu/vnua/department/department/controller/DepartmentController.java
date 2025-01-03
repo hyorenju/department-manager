@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.vnua.department.controller.BaseController;
 import vn.edu.vnua.department.department.entity.Department;
+import vn.edu.vnua.department.department.entity.DepartmentBasicDTO;
 import vn.edu.vnua.department.department.entity.DepartmentDTO;
 import vn.edu.vnua.department.department.request.CreateDepartmentRequest;
 import vn.edu.vnua.department.department.request.GetDepartmentListRequest;
@@ -38,8 +39,8 @@ public class DepartmentController extends BaseController {
 
     @PostMapping("selection")
     public ResponseEntity<?> getDepartmentSelection(@RequestBody @Valid GetDepartmentSelectionRequest request) {
-        List<DepartmentDTO> response = departmentService.getDepartmentSelection(request).stream().map(
-                department -> modelMapper.map(department, DepartmentDTO.class)
+        List<DepartmentBasicDTO> response = departmentService.getDepartmentSelection(request).stream().map(
+                department -> modelMapper.map(department, DepartmentBasicDTO.class)
         ).toList();
         return buildListItemResponse(response, response.size());
     }

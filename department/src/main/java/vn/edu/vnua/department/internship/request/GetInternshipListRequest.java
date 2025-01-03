@@ -18,4 +18,5 @@ public class GetInternshipListRequest extends GetPageBaseRequest {
     private String status;
     private String facultyId;
     private String departmentId;
+    private String note;
 }

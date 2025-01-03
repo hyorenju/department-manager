@@ -20,9 +20,9 @@ public class CustomExamRepository {
         return ((root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (StringUtils.hasText(request.getDepartmentId())) {
-                predicates.add(criteriaBuilder.like(root.get("subject").get("department").get("id"), request.getDepartmentId()));
+                predicates.add(criteriaBuilder.like(root.get("lecturerTeach").get("department").get("id"), request.getDepartmentId()));
             } else if (StringUtils.hasText(request.getFacultyId())) {
-                predicates.add(criteriaBuilder.like(root.get("subject").get("department").get("faculty").get("id"), request.getFacultyId()));
+                predicates.add(criteriaBuilder.like(root.get("lecturerTeach").get("department").get("faculty").get("id"), request.getFacultyId()));
             }
             if (StringUtils.hasText(request.getSubjectId())) {
                 predicates.add(criteriaBuilder.like(root.get("subject").get("id"), "%" + request.getSubjectId() + "%"));
@@ -42,6 +42,13 @@ public class CustomExamRepository {
             if (StringUtils.hasText(request.getTestDay())) {
                 try {
                     predicates.add(criteriaBuilder.equal(root.get("testDay"), MyUtils.convertTimestampFromString(request.getTestDay())));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (StringUtils.hasText(request.getDeadline())) {
+                try {
+                    predicates.add(criteriaBuilder.equal(root.get("deadline"), MyUtils.convertTimestampFromString(request.getDeadline())));
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
@@ -68,7 +75,7 @@ public class CustomExamRepository {
                 predicates.add(criteriaBuilder.like(root.get("testRoom"), "%" + request.getTestRoom() + "%"));
             }
             if (request.getLessonStart() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("lessonStart"), request.getTestRoom()));
+                predicates.add(criteriaBuilder.equal(root.get("lessonStart"), request.getLessonStart()));
             }
             if (request.getLessonsTest() != null) {
                 predicates.add(criteriaBuilder.equal(root.get("lessonsTest"), request.getLessonsTest()));
@@ -77,7 +84,7 @@ public class CustomExamRepository {
                 predicates.add(criteriaBuilder.equal(root.get("examCode"), "%" + request.getExamCode() + "%"));
             }
             if (StringUtils.hasText(request.getLecturerTeachId())) {
-                predicates.add(criteriaBuilder.like(root.get("lecturerTeach").get("id"), "%" + request.getTestRoom() + "%"));
+                predicates.add(criteriaBuilder.like(root.get("lecturerTeach").get("id"), "%" + request.getLecturerTeachId() + "%"));
             }
 
             query.orderBy(
@@ -98,9 +105,12 @@ public class CustomExamRepository {
         return ((root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (StringUtils.hasText(request.getDepartmentId())) {
-                predicates.add(criteriaBuilder.like(root.get("subject").get("department").get("id"), request.getDepartmentId()));
+                predicates.add(criteriaBuilder.like(root.get("lecturerTeach").get("department").get("id"), request.getDepartmentId()));
             } else if (StringUtils.hasText(request.getFacultyId())) {
-                predicates.add(criteriaBuilder.like(root.get("subject").get("department").get("faculty").get("id"), request.getFacultyId()));
+                predicates.add(criteriaBuilder.like(root.get("lecturerTeach").get("department").get("faculty").get("id"), request.getFacultyId()));
+            }
+            if (StringUtils.hasText(request.getSubjectId())) {
+                predicates.add(criteriaBuilder.like(root.get("subject").get("id"), "%" + request.getSubjectId() + "%"));
             }
             if (StringUtils.hasText(request.getSubjectName())) {
                 predicates.add(criteriaBuilder.like(root.get("subject").get("name"), "%" + request.getSubjectName() + "%"));
@@ -121,10 +131,13 @@ public class CustomExamRepository {
                     e.printStackTrace();
                 }
             }
-//            if(StringUtils.hasText(request.getProctorId())){
-//                predicates.add(criteriaBuilder.like(root.get("proctor1").get("id"), request.getProctorId()));
-//                predicates.add(criteriaBuilder.like(root.get("proctor2").get("id"), request.getProctorId()));
-//            }
+            if (StringUtils.hasText(request.getDeadline())) {
+                try {
+                    predicates.add(criteriaBuilder.equal(root.get("deadline"), MyUtils.convertTimestampFromString(request.getDeadline())));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
             if (StringUtils.hasText(request.getProctorId())) {
                 predicates.add(
                         CriteriaBuilderUtil.createPredicateForSearchInsensitive(root, criteriaBuilder, request.getProctorId(),
@@ -133,6 +146,30 @@ public class CustomExamRepository {
             }
             if (StringUtils.hasText(request.getClassId())) {
                 predicates.add(criteriaBuilder.like(root.get("classId"), "%" + request.getClassId() + "%"));
+            }
+            if (request.getExamGroup() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("examGroup"), request.getExamGroup()));
+            }
+            if (request.getCluster() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("cluster"), request.getCluster()));
+            }
+            if (request.getQuantity() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("quantity"), request.getQuantity()));
+            }
+            if (StringUtils.hasText(request.getTestRoom())) {
+                predicates.add(criteriaBuilder.like(root.get("testRoom"), "%" + request.getTestRoom() + "%"));
+            }
+            if (request.getLessonStart() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("lessonStart"), request.getLessonStart()));
+            }
+            if (request.getLessonsTest() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("lessonsTest"), request.getLessonsTest()));
+            }
+            if (StringUtils.hasText(request.getExamCode())) {
+                predicates.add(criteriaBuilder.equal(root.get("examCode"), "%" + request.getExamCode() + "%"));
+            }
+            if (StringUtils.hasText(request.getLecturerTeachId())) {
+                predicates.add(criteriaBuilder.like(root.get("lecturerTeach").get("id"), "%" + request.getLecturerTeachId() + "%"));
             }
 
             query.orderBy(

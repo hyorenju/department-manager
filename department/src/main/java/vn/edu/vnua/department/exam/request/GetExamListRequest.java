@@ -33,4 +33,5 @@ public class GetExamListRequest extends GetPageBaseRequest {
     private String examTakerId;
     private String examGiverId;
     private String pointGiverId;
+    private String deadline;
 }

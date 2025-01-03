@@ -84,7 +84,7 @@ public class TeachingServiceImpl implements TeachingService {
         }
 
         if (teachingRepository.existsBySchoolYearIdAndTermAndSubjectIdAndClassIdAndTeachingGroup(request.getSchoolYear().getId(),
-                request.getTerm(), request.getSubject().getId(), request.getClassId(), request.getTeachingGroup())) {
+                request.getTerm(), request.getSubject().getId(), request.getClassId(), MyUtils.parseIntegerFromString(request.getTeachingGroup()))) {
             throw new RuntimeException(Constants.TeachingConstant.TEACHING_IS_EXISTED);
         }
 
@@ -100,16 +100,14 @@ public class TeachingServiceImpl implements TeachingService {
                 .subject(subject)
                 .teacher(teacher)
                 .classId(request.getClassId())
-                .teachingGroup(request.getTeachingGroup())
+                .teachingGroup(MyUtils.parseIntegerFromString(request.getTeachingGroup()))
                 .schoolYear(schoolYear)
                 .term(request.getTerm())
                 .componentFile(request.getComponentFile())
                 .summaryFile(request.getSummaryFile())
                 .status(status)
-//                .deadline(MyUtils.convertTimestampFromString(request.getDeadline()))
                 .createdAt(Timestamp.valueOf(LocalDateTime.now()))
                 .createdBy(createdBy)
-//                .isWarning(true)
                 .isLock(false)
                 .build());
     }
@@ -121,13 +119,30 @@ public class TeachingServiceImpl implements TeachingService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User modifiedBy = userRepository.getUserById(authentication.getPrincipal().toString());
         if (modifiedBy.getRole().getId().equals(Constants.RoleIdConstant.LECTURER) &&
-                teaching.getTeacher() != modifiedBy) {
+                !teaching.getTeacher().getId().equals(modifiedBy.getId())) {
             throw new RuntimeException(Constants.TeachingConstant.CANNOT_UPDATE);
         }
 
         User teacher = userRepository.findById(request.getTeacher().getId()).orElseThrow(() -> new RuntimeException(Constants.UserConstant.USER_NOT_FOUND));
+        if(!teacher.getId().equals(modifiedBy.getId()) && modifiedBy.getRole().getId().equals(Constants.RoleIdConstant.LECTURER)) {
+            throw new RuntimeException(Constants.TeachingConstant.CANNOT_CHANGE_TEACHER);
+        } else {
 
-        teaching.setTeacher(teacher);
+            teaching.setTeacher(teacher);
+        }
+
+
+        if (teachingRepository.existsBySchoolYearIdAndTermAndSubjectIdAndClassIdAndTeachingGroup(request.getSchoolYear().getId(),
+                request.getTerm(), teaching.getSubject().getId(), request.getClassId(), MyUtils.parseIntegerFromString(request.getTeachingGroup()))) {
+            throw new RuntimeException(Constants.TeachingConstant.TEACHING_IS_EXISTED);
+        }
+
+        MasterData schoolYear = masterDataRepository.findById(request.getSchoolYear().getId()).orElseThrow(()->new RuntimeException(Constants.MasterDataConstant.SCHOOL_YEAR_NOT_FOUND));
+
+        teaching.setSchoolYear(schoolYear);
+        teaching.setTerm(request.getTerm());
+        teaching.setTeachingGroup(MyUtils.parseIntegerFromString(request.getTeachingGroup()));
+        teaching.setClassId(request.getClassId());
         teaching.setModifiedAt(Timestamp.valueOf(LocalDateTime.now()));
         teaching.setModifiedBy(modifiedBy);
 
@@ -232,7 +247,7 @@ public class TeachingServiceImpl implements TeachingService {
 
         //Chỉ có thể đọc dữ liệu của chính mình
         if (createdBy.getRole().getId().equals(Constants.RoleIdConstant.LECTURER)) {
-            if (createdBy != teacher) {
+            if (createdBy.getId() != teacher.getId()) {
                 throw new RuntimeException(Constants.TeachingConstant.CANNOT_UPDATE);
             }
         }

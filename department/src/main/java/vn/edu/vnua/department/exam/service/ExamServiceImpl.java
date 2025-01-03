@@ -146,7 +146,7 @@ public class ExamServiceImpl implements ExamService {
     }
 
     @Override
-    public Exam updateExam(Long id, UpdateExamRequest request) {
+    public Exam updateExam(Long id, UpdateExamRequest request) throws ParseException {
         Exam exam = examRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.ExamConstant.EXAM_NOT_FOUND));
         if (request.getProctor1().getId().equals(request.getProctor2().getId())) {
             throw new RuntimeException(Constants.ExamConstant.PROCTORS_NOT_BE_SAME);
@@ -184,6 +184,7 @@ public class ExamServiceImpl implements ExamService {
         exam.setExamGiver(examGiver);
         exam.setPointGiver(pointGiver);
         exam.setNote(request.getNote());
+        exam.setDeadline(MyUtils.convertTimestampFromString(request.getDeadline()));
 
         exam.setModifiedAt(Timestamp.valueOf(LocalDateTime.now()));
         exam.setModifiedBy(modifiedBy);
@@ -212,11 +213,12 @@ public class ExamServiceImpl implements ExamService {
         Integer lessonsTestNotAssigned = examNotAssigned.getLessonsTest();
         List<Integer> lessonSeriesNotAssigned = createLessonSeries(lessonStartNotAssigned, lessonsTestNotAssigned);
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User assigner = userRepository.getUserById(authentication.getPrincipal().toString());
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        User assigner = userRepository.getUserById(authentication.getPrincipal().toString());
 
-        Department department = assigner.getDepartment();
-        List<User> usersNotAssigned = userRepository.findAllByDepartment(department);
+//        Department department = assigner.getDepartment();
+//        List<User> usersNotAssigned = userRepository.findAllByDepartment(department);
+        List<User> usersNotAssigned = userRepository.findAll();
         List<Exam> exams = examRepository.findAllByTestDay(testDay);
 
 
@@ -327,7 +329,7 @@ public class ExamServiceImpl implements ExamService {
         return examRepository.saveAndFlush(exam);
     }
 
-        @Scheduled(cron = "0 0 8 * * ?")
+        @Scheduled(cron = "0 0 0 * * ?")
 //    @Scheduled(cron = "0 * * * * ?")
     public void sendMail() {
         List<Exam> examList = examRepository.findAllByIsWarning(true);
@@ -337,22 +339,23 @@ public class ExamServiceImpl implements ExamService {
         examList.forEach(exam -> {
             Timestamp deadline = exam.getDeadline();
 
-            if(deadline.after(today)){
+            if(deadline.before(today)){
                 exam.setIsWarning(false);
                 examRepository.saveAndFlush(exam);
             }else {
+
                 // Tính toán sự chênh lệch thời gian
                 LocalDateTime todayLocalDateTime = today.toLocalDateTime();
-                LocalDateTime dealineLocalDateTime = deadline.toLocalDateTime();
+                LocalDateTime deadlineLocalDateTime = deadline.toLocalDateTime();
 
-                Duration duration = Duration.between(dealineLocalDateTime, todayLocalDateTime );
+                Duration duration = Duration.between(deadlineLocalDateTime, todayLocalDateTime );
                 int daysBetween = (int) duration.toDays();  // Lấy số ngày
 
                 switch (daysBetween) {
-                    case 2 -> mailService.sendExamWarningMail(exam, "ngày kia");
-                    case 1 -> mailService.sendExamWarningMail(exam, "ngày mai");
+                    case 2 -> mailService.sendExamWarningMail(exam, MyUtils.convertTimestampToString(deadline));
+                    case 1 -> mailService.sendExamWarningMail(exam, MyUtils.convertTimestampToString(deadline));
                     case 0 -> {
-                        mailService.sendExamWarningMail(exam, "hôm nay");
+                        mailService.sendExamWarningMail(exam, MyUtils.convertTimestampToString(deadline));
                         exam.setIsWarning(false);
                         examRepository.saveAndFlush(exam);
                     }

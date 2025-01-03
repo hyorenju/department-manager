@@ -74,10 +74,10 @@ public class MailServiceImpl implements MailService {
                 "<body>" +
                 "<div class='container'>" +
                 "<div class='title'>" +
-                "<h1>Sắp đến hạn nộp điểm</h1>" +
+                "<h1>CẢNH BÁO HẠN NỘP ĐIỂM</h1>" +
                 "</div>" +
                 "<div class='content'>" +
-                "<p>" + deadline.toUpperCase() + " là hạn cuối để nộp điểm cho môn thi có thông tin như sau:</p>" +
+                "<p style=\"font-weight: bold;\">Thầy/cô chú ý hạn nộp điểm " + deadline.toUpperCase() + " cho nhóm thi có thông tin như sau:</p>" +
                 "<p>Mã môn thi: " + exam.getSubject().getId() + "</p>" +
                 "<p>Tên môn thi: " + exam.getSubject().getName() + "</p>" +
                 "<p>Nhóm: " + exam.getExamGroup() + " - Tổ: " + exam.getCluster() + "</p>" +

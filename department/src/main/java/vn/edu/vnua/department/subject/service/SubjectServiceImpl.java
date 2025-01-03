@@ -42,11 +42,12 @@ public class SubjectServiceImpl implements SubjectService {
 
     @Override
     public List<Subject> getSubjectSelection(GetSubjectSelectionRequest request) {
-        if (StringUtils.hasText(request.getDepartmentId())) {
-            return subjectRepository.findAllByDepartmentId(request.getDepartmentId());
-        } else if (StringUtils.hasText(request.getFacultyId())) {
-            return subjectRepository.findAllByDepartmentFacultyId(request.getFacultyId());
-        } else return subjectRepository.findAll();
+//        if (StringUtils.hasText(request.getDepartmentId())) {
+//            return subjectRepository.findAllByDepartmentId(request.getDepartmentId());
+//        } else if (StringUtils.hasText(request.getFacultyId())) {
+//            return subjectRepository.findAllByDepartmentFacultyId(request.getFacultyId());
+//        } else
+            return subjectRepository.findAll();
     }
 
     @Override

@@ -15,4 +15,6 @@ public class CreateProjectRequest {
 
     @NotBlank(message = "Ngày kết thúc không được để trống")
     private String deadline;
+
+    private Boolean isPrivate;
 }

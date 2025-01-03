@@ -45,17 +45,21 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public Page<Project> filterPage(FilterProjectPage request) {
-        if(StringUtils.hasText(request.getKeyword()) ||
-                StringUtils.hasText(request.getCreatedById()) ||
-                StringUtils.hasText(request.getStartDate()) ||
-                StringUtils.hasText(request.getEndDate()) ||
-                StringUtils.hasText(request.getStatusId()) ||
-                StringUtils.hasText(request.getMemberId())) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User getter = userRepository.getUserById(authentication.getPrincipal().toString());
+        request.setGetter(getter);
+
+//        if(StringUtils.hasText(request.getKeyword()) ||
+//                StringUtils.hasText(request.getCreatedById()) ||
+//                StringUtils.hasText(request.getStartDate()) ||
+//                StringUtils.hasText(request.getEndDate()) ||
+//                StringUtils.hasText(request.getStatusId()) ||
+//                StringUtils.hasText(request.getMemberId())) {
             Specification<Project> specification = CustomProjectRepository.filterPage(request);
             return projectRepository.findAll(specification, PageRequest.of(request.getPage() - 1, request.getSize()));
-        } else {
-            return projectRepository.findAll(PageRequest.of(request.getPage() - 1, request.getSize()));
-        }
+//        } else {
+//            return projectRepository.findAll(PageRequest.of(request.getPage() - 1, request.getSize()));
+//        }
     }
 
     @Override
@@ -80,6 +84,7 @@ public class ProjectServiceImpl implements ProjectService {
                         .start(start)
                         .projectStatus(projectStatus)
                         .deadline(deadline)
+                        .isPrivate(request.getIsPrivate())
                         .build()
         );
     }

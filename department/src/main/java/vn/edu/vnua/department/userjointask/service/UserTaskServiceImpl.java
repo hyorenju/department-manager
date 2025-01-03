@@ -138,7 +138,8 @@ public class UserTaskServiceImpl implements UserTaskService {
         MasterData finishedSoonerStatus = masterDataRepository.findByName(Constants.MasterDataNameConstant.FINISHED_SOONER);
         MasterData finishedOnTimeStatus = masterDataRepository.findByName(Constants.MasterDataNameConstant.FINISHED_ON_TIME);
 
-        Timestamp deadline = userTask.getTask().getProject().getDeadline();
+        Timestamp taskDeadline = userTask.getTask().getDeadline();
+        Timestamp projectDeadline = userTask.getTask().getProject().getDeadline();
         Timestamp now = Timestamp.valueOf(LocalDateTime.now());
         //start of today
         Timestamp today = Timestamp.valueOf(LocalDate.now().atStartOfDay());
@@ -151,12 +152,12 @@ public class UserTaskServiceImpl implements UserTaskService {
         Project project = task.getProject();
         if (taskStatus == doingStatus || taskStatus == doingLateStatus) {
             userTask.setFinishedAt(null);
-            if (deadline.before(now)) {
+            if (taskDeadline.before(now)) {
                 task.setTaskStatus(doingLateStatus);
             } else {
                 task.setTaskStatus(doingStatus);
             }
-            if (deadline.before(now)) {
+            if (projectDeadline.before(now)) {
                 project.setProjectStatus(doingLateStatus);
             } else {
                 project.setProjectStatus(doingStatus);
@@ -168,11 +169,11 @@ public class UserTaskServiceImpl implements UserTaskService {
 
         if (!userTaskRepository.existsByTaskAndPersonalStatus(task, doingStatus) &&
                 !userTaskRepository.existsByTaskAndPersonalStatus(task, doingLateStatus)) {
-            if (deadline.before(now)) {
+            if (taskDeadline.before(now)) {
                 task.setTaskStatus(finishedLateStatus);
-            } else if (deadline.after(now)) {
+            } else if (taskDeadline.after(now)) {
                 task.setTaskStatus(finishedSoonerStatus);
-            } else if (deadline.equals(today)) {
+            } else if (taskDeadline.equals(today)) {
                 task.setTaskStatus(finishedOnTimeStatus);
             }
         }
@@ -180,11 +181,11 @@ public class UserTaskServiceImpl implements UserTaskService {
 
         if (!taskRepository.existsByProjectAndTaskStatus(project, doingStatus) &&
                 !taskRepository.existsByProjectAndTaskStatus(project, doingLateStatus)) {
-            if (deadline.before(now)) {
+            if (projectDeadline.before(now)) {
                 project.setProjectStatus(finishedLateStatus);
-            } else if (deadline.after(now)) {
+            } else if (projectDeadline.after(now)) {
                 project.setProjectStatus(finishedSoonerStatus);
-            } else if (deadline.equals(today)) {
+            } else if (projectDeadline.equals(today)) {
                 project.setProjectStatus(finishedOnTimeStatus);
             }
         }
@@ -198,7 +199,7 @@ public class UserTaskServiceImpl implements UserTaskService {
     public UserTask finishedMyTask(Long id) {
         UserTask userTask = userTaskRepository.findById(id).orElseThrow(() -> new RuntimeException(Constants.UserTaskConstant.USER_TASK_NOT_FOUND));
 
-        Timestamp deadline = userTask.getTask().getDeadline();
+        Timestamp taskDeadline = userTask.getTask().getDeadline();
         Timestamp now = Timestamp.valueOf(LocalDateTime.now());
         Timestamp today = Timestamp.valueOf(LocalDate.now().atStartOfDay());
 
@@ -208,30 +209,30 @@ public class UserTaskServiceImpl implements UserTaskService {
         MasterData finishedSoonerStatus = masterDataRepository.findByName(Constants.MasterDataNameConstant.FINISHED_SOONER);
         MasterData finishedOnTimeStatus = masterDataRepository.findByName(Constants.MasterDataNameConstant.FINISHED_ON_TIME);
 
-        if (deadline.before(now)) {
+        if (taskDeadline.before(now)) {
             userTask.setPersonalStatus(finishedLateStatus);
-        } else if (deadline.after(now)) {
+        } else if (taskDeadline.after(now)) {
             userTask.setPersonalStatus(finishedSoonerStatus);
-        } else if (deadline.equals(today)) {
+        } else if (taskDeadline.equals(today)) {
             userTask.setPersonalStatus(finishedOnTimeStatus);
         }
         userTask.setFinishedAt(now);
         userTaskRepository.saveAndFlush(userTask);
 
         Task task = userTask.getTask();
+        Timestamp projectDeadline = userTask.getTask().getProject().getDeadline();
         Project project = task.getProject();
-        Timestamp deadline1 = userTask.getTask().getProject().getDeadline();
         Timestamp now1 = Timestamp.valueOf(LocalDateTime.now());
         //start of today
         Timestamp today1 = Timestamp.valueOf(LocalDate.now().atStartOfDay());
         if (!userTaskRepository.existsByTaskAndPersonalStatus(task, doingStatus) &&
                 !userTaskRepository.existsByTaskAndPersonalStatus(task, doingLateStatus)) {
 
-            if (deadline1.before(now1)) {
+            if (projectDeadline.before(now1)) {
                 task.setTaskStatus(finishedLateStatus);
-            } else if (deadline1.after(now1)) {
+            } else if (projectDeadline.after(now1)) {
                 task.setTaskStatus(finishedSoonerStatus);
-            } else if (deadline1.equals(today1)) {
+            } else if (projectDeadline.equals(today1)) {
                 task.setTaskStatus(finishedOnTimeStatus);
             }
         }
@@ -240,11 +241,11 @@ public class UserTaskServiceImpl implements UserTaskService {
         if (!taskRepository.existsByProjectAndTaskStatus(project, doingStatus) &&
                 !taskRepository.existsByProjectAndTaskStatus(project, doingLateStatus)) {
 
-            if (deadline1.before(now1)) {
+            if (projectDeadline.before(now1)) {
                 project.setProjectStatus(finishedLateStatus);
-            } else if (deadline1.after(now1)) {
+            } else if (projectDeadline.after(now1)) {
                 project.setProjectStatus(finishedSoonerStatus);
-            } else if (deadline1.equals(today1)) {
+            } else if (projectDeadline.equals(today1)) {
                 project.setProjectStatus(finishedOnTimeStatus);
             }
         }

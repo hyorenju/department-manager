@@ -10,4 +10,5 @@ public class UserBasicDTO {
     private String id;
     private String firstName;
     private String lastName;
+//    private DepartmentBasicDTO department;
 }

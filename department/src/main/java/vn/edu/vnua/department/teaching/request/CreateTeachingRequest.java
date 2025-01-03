@@ -1,6 +1,7 @@
 package vn.edu.vnua.department.teaching.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -17,8 +18,6 @@ import java.sql.Timestamp;
 
 @Data
 public class CreateTeachingRequest {
-    private Long id;
-
     private CreateSubjectRequest subject;
 
     private CreateUserRequest teacher;
@@ -27,15 +26,13 @@ public class CreateTeachingRequest {
     private String classId;
 
     @NotNull(message = "Nhóm không được để trống")
-    private Integer teachingGroup;
+    @Pattern(regexp = "^\\d+$", message = "Nhóm môn học phải là một chuỗi ký tự số")
+    private String teachingGroup;
 
     private CreateMasterDataRequest schoolYear;
 
     @NotNull(message = "Học kỳ không được để trống")
     private Byte term;
-
-//    @NotBlank(message = "Hạn nộp điểm không được để trống")
-//    private String deadline;
 
     private String componentFile;
 

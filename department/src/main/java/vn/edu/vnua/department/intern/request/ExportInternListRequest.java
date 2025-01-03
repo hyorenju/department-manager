@@ -17,4 +17,5 @@ public class ExportInternListRequest {
     private String status;
     private String facultyId;
     private String departmentId;
+    private String note;
 }

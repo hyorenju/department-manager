@@ -32,4 +32,6 @@ public class UpdateUserRequest {
     private CreateRoleRequest role;
 
     private String note;
+
+    private CreateDepartmentRequest department;
 }
